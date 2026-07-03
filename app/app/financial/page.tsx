@@ -147,9 +147,9 @@ export default function FinancialPage() {
                 { label: t.totalExpenseItems,   value: String(expenses.length),                                            color: 'var(--fg-1)' },
                 { label: t.salaryExpenses,      value: `${cur} ${expenses.filter(e=>e.category==='salary').reduce((s,e)=>s+(e.amount||0),0).toLocaleString()}`, color: '#7c3aed' },
               ].map(s => (
-                <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div key={s.label} style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
                   <span style={{ fontSize: '0.8rem', color: 'var(--fg-3)' }}>{s.label}</span>
-                  <span style={{ fontSize: '1rem', fontWeight: 700, color: s.color }}>{s.value}</span>
+                  <span className="ltr-num" style={{ fontSize: '0.95rem', fontWeight: 600, color: s.color, fontFeatureSettings: '"tnum"' }}>{s.value}</span>
                 </div>
               ))}
             </div>

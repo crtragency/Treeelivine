@@ -1232,3 +1232,156 @@ code, kbd, pre {
 @media (max-width: 767px) {
   .dash-bottom-grid { grid-template-columns: 1fr !important; }
 }
+
+/* ======================================================================= */
+/* KIT ADDITIONS — page head, counts, progress, charts, pipeline           */
+/* ======================================================================= */
+
+:root {
+  /* Chart series (validated for CVD + contrast on light surface) */
+  --chart-1: #66862f;   /* revenue — chart olive */
+  --chart-2: #2f6bbf;   /* expenses — info blue */
+
+  /* CRM pipeline column tints */
+  --pipeline-prospect:    #e9eef6;
+  --pipeline-qualified:   #e7eee0;
+  --pipeline-negotiation: #f5ecdc;
+  --pipeline-active:      #d8e7c8;
+  --pipeline-inactive:    #ecebe5;
+  --pipeline-lost:        #f3dedb;
+}
+
+[data-theme="dark"] {
+  --chart-1: #87a058;
+  --chart-2: #5b8ed6;
+
+  --pipeline-prospect:    rgba(47, 107, 191, 0.14);
+  --pipeline-qualified:   rgba(103, 130, 64, 0.16);
+  --pipeline-negotiation: rgba(201, 139, 21, 0.13);
+  --pipeline-active:      rgba(135, 160, 88, 0.20);
+  --pipeline-inactive:    rgba(152, 146, 127, 0.12);
+  --pipeline-lost:        rgba(192, 57, 43, 0.14);
+}
+
+/* --- Page head --------------------------------------------------------- */
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+.page-head h1 {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
+  color: var(--fg-1);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-tight);
+}
+.page-head .sub {
+  font-size: var(--fs-sm);
+  color: var(--fg-4);
+  margin-top: 2px;
+}
+.page-head .actions { display: flex; gap: var(--space-2); align-items: center; }
+
+/* Standard page content wrapper */
+.page-content {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  flex: 1;
+  min-width: 0;
+}
+@media (max-width: 767px) {
+  .page-content { padding: var(--space-4); gap: var(--space-4); }
+}
+
+/* --- Sidebar nav counts ------------------------------------------------ */
+.nav-item .count {
+  margin-inline-start: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-4);
+  background: var(--bg-surface-2);
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+}
+.nav-item.active .count { color: var(--brand-primary); background: var(--brand-primary-soft); }
+
+/* --- Progress bar ------------------------------------------------------ */
+.progress {
+  height: 5px;
+  background: var(--bg-surface-3);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  min-width: 56px;
+}
+.progress > i {
+  display: block;
+  height: 100%;
+  background: var(--brand-primary);
+  border-radius: var(--radius-pill);
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+/* --- Pill dot + KPI unit ------------------------------------------------ */
+.pill .dot { width: 5px; height: 5px; border-radius: 99px; background: currentColor; flex: none; }
+.kpi .unit { font-size: var(--fs-sm); color: var(--fg-4); font-weight: var(--fw-medium); }
+
+/* --- Card section header (table cards, feed cards) --------------------- */
+.card-head {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.card-head h3 {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--fg-1);
+}
+
+/* --- Segmented control (filter tabs) ------------------------------------ */
+.seg {
+  display: inline-flex;
+  gap: 2px;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.seg button {
+  padding: 4px 12px;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  border-radius: calc(var(--radius-md) - 2px);
+  background: transparent;
+  color: var(--fg-4);
+  white-space: nowrap;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.seg button:hover { color: var(--fg-2); }
+.seg button.on {
+  background: var(--bg-surface);
+  color: var(--fg-1);
+  box-shadow: var(--shadow-xs);
+}
+
+/* Arabic: mono caps treatment doesn't suit Arabic labels */
+[dir="rtl"] .kpi-label,
+[dir="rtl"] .nav-section,
+[dir="rtl"] .t-table th {
+  font-family: var(--font-sans);
+  letter-spacing: 0;
+  text-transform: none;
+}

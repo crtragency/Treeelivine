@@ -15,12 +15,12 @@ const IC = ({ d, size = 16 }: { d: string | string[]; size?: number }) => (
   </svg>
 )
 
-function Stat({ label, value, color, sub }: { label: string; value: string; color: string; sub?: string }) {
+function Stat({ label, value, color, sub }: { label: string; value: number | string; color?: string; sub?: string }) {
   return (
-    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '0.875rem 1.25rem' }}>
-      <p style={{ fontSize: '0.72rem', color: 'var(--fg-4)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500, marginBottom: '0.3rem' }}>{label}</p>
-      <p style={{ fontSize: '1.3rem', fontWeight: 700, color }}>{value}</p>
-      {sub && <p style={{ fontSize: '0.72rem', color: 'var(--fg-4)', marginTop: 2 }}>{sub}</p>}
+    <div className="kpi" style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
+      <span className="kpi-label" style={{ marginBottom: 0 }}>{label}</span>
+      <span className="kpi-value ltr-num" style={color ? { color } : undefined}>{value}</span>
+      {sub && <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-4)' }}>{sub}</span>}
     </div>
   )
 }
@@ -103,11 +103,11 @@ export default function InvoicesPage() {
   const { subtotal: modalSubtotal } = calcTotals(items, Number(form.taxRate || 0))
 
   return (
-    <div style={{ padding: '1.75rem 2rem', flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+    <div className="page-content">
+      <div className="page-head">
         <div>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--fg-1)' }}>{t.invoices || 'Invoices'}</h1>
-          <p style={{ fontSize: '0.8rem', color: 'var(--fg-4)', marginTop: 2 }}>{t.invoicesSubtitle || 'Track and manage all client invoices'}</p>
+          <h1>{t['finance.invoices'] || 'Invoices'}</h1>
+          <p className="sub">{t.invoicesSubtitle || 'Track and manage all client invoices'}</p>
         </div>
         {hasPermission('finance.write') && (
           <button className="btn btn-primary" onClick={openCreate} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -117,7 +117,7 @@ export default function InvoicesPage() {
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0.875rem', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
         <Stat label={t.totalInvoices || 'Total Invoices'} value={String(invoices.length)}                        color="var(--fg-1)" />
         <Stat label={t.collected || 'Collected'}      value={`${cur} ${totalRev.toLocaleString()}`}          color="#059669" sub={`${invoices.filter(i=>i.status==='paid').length} ${t.paidCount || 'paid'}`} />
         <Stat label={t.outstanding || 'Outstanding'}    value={`${cur} ${totalUnpaid.toLocaleString()}`}       color="#dc2626" sub={`${invoices.filter(i=>i.status!=='paid'&&i.status!=='draft').length} ${t.unpaidCount || 'unpaid'}`} />
@@ -125,41 +125,34 @@ export default function InvoicesPage() {
       </div>
 
       {/* Filter tabs */}
-      <div style={{ display: 'flex', gap: '0.3rem', background: 'var(--surface2)', borderRadius: 8, padding: '0.25rem', marginBottom: '1rem', width: 'fit-content' }}>
+      <div className="seg">
         {['', ...INVOICE_STATUSES].map(s => (
-          <button key={s} onClick={() => setFilterStatus(s)} style={{
-            padding: '0.3rem 0.75rem', fontSize: '0.78rem', fontWeight: 500, border: 'none', cursor: 'pointer',
-            borderRadius: 6, background: filterStatus === s ? 'var(--surface)' : 'transparent',
-            color: filterStatus === s ? 'var(--fg-1)' : 'var(--fg-4)',
-            boxShadow: filterStatus === s ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-          }}>
-            {s ? s.charAt(0).toUpperCase() + s.slice(1) : (t.all || 'All')}
+          <button key={s} className={filterStatus === s ? 'on' : ''} onClick={() => setFilterStatus(s)}>
+            {s ? (t[`status.${s}`] || s) : (t.all || 'All')}
           </button>
         ))}
       </div>
 
       {loading ? <LoadingSpinner /> : (
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div className="card-surface table-scroll" style={{ overflow: "hidden auto" }}>
+          <table className="t-table">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
+              <tr>
                 {[t.invoiceNumber, t.invoiceClient, t.invoiceAmount, t.invoicePaid, t.status, t.invoiceDueDate, t.invoiceActions].map(h => (
-                  <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'start', fontSize: '0.75rem', color: 'var(--fg-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+                  <th key={h}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.map(inv => (
-                <tr key={inv._id} style={{ borderBottom: '1px solid var(--border)' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = '')}>
-                  <td style={{ padding: '0.875rem 1rem', fontWeight: 600, fontSize: '0.875rem', color: 'var(--accent)' }}>{inv.invoiceNumber}</td>
-                  <td style={{ padding: '0.875rem 1rem', fontSize: '0.875rem', color: 'var(--fg-2)' }}>{inv.customer?.name || inv.customerId?.name || inv.customerName || '—'}</td>
-                  <td style={{ padding: '0.875rem 1rem', fontWeight: 600, color: 'var(--fg-1)' }}>{inv.currency || cur} {(inv.amount ?? inv.amountBase ?? 0).toLocaleString()}</td>
-                  <td style={{ padding: '0.875rem 1rem', fontSize: '0.875rem', color: '#059669', fontWeight: 500 }}>{inv.currency || cur} {(inv.paidAmount || 0).toLocaleString()}</td>
-                  <td style={{ padding: '0.875rem 1rem' }}><StatusBadge status={inv.status} /></td>
-                  <td style={{ padding: '0.875rem 1rem', fontSize: '0.82rem', color: 'var(--fg-4)' }}>{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}</td>
-                  <td style={{ padding: '0.875rem 1rem' }}>
+                <tr key={inv._id}>
+                  <td style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--accent)' }}>{inv.invoiceNumber}</td>
+                  <td style={{ fontSize: '0.875rem', color: 'var(--fg-2)' }}>{inv.customer?.name || inv.customerId?.name || inv.customerName || '—'}</td>
+                  <td style={{ fontWeight: 600, color: 'var(--fg-1)' }}>{inv.currency || cur} {(inv.amount ?? inv.amountBase ?? 0).toLocaleString()}</td>
+                  <td style={{ fontSize: '0.875rem', color: '#059669', fontWeight: 500 }}>{inv.currency || cur} {(inv.paidAmount || 0).toLocaleString()}</td>
+                  <td><StatusBadge status={inv.status} /></td>
+                  <td style={{ fontSize: '0.82rem', color: 'var(--fg-4)' }}>{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}</td>
+                  <td>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
                       <Link href={`/app/finance/invoices/${inv._id}/pdf`} className="btn btn-secondary" style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}>PDF</Link>
                       {hasPermission('finance.write') && (
@@ -206,7 +199,7 @@ export default function InvoicesPage() {
             <div>
               <label className="label">{t.status || 'Status'}</label>
               <select className="input" value={form.status || 'unpaid'} onChange={e => setForm((p: any) => ({ ...p, status: e.target.value }))}>
-                {INVOICE_STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                {INVOICE_STATUSES.map(s => <option key={s} value={s}>{t[`status.${s}`] || s}</option>)}
               </select>
             </div>
             <div><label className="label">{t.taxRate || 'Tax Rate %'}</label><input className="input" type="number" value={form.taxRate ?? 15} onChange={e => setForm((p: any) => ({ ...p, taxRate: Number(e.target.value) }))} /></div>

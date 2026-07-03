@@ -93,11 +93,11 @@ export default function SupportTicketsPage() {
   }
 
   return (
-    <div style={{ padding: '1.75rem 2rem', flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+    <div className="page-content">
+      <div className="page-head">
         <div>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--fg-1)' }}>{t['support.title']}</h1>
-          <p style={{ fontSize: '0.8rem', color: 'var(--fg-4)', marginTop: 2 }}>{t['support.subtitle']}</p>
+          <h1>{t['support.title']}</h1>
+          <p className="sub">{t['support.subtitle']}</p>
         </div>
         <button className="btn btn-primary" onClick={openCreate} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           <IC d="M12 5v14M5 12h14" /> {t['support.newTicket']}
@@ -115,44 +115,40 @@ export default function SupportTicketsPage() {
         <input className="input" placeholder={t['support.searchTickets']} value={search} onChange={e => setSearch(e.target.value)} style={{ width: 220 }} />
         <select className="input" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ width: 150 }}>
           <option value="">{t['support.allStatuses']}</option>
-          {TICKET_STATUSES.map(s => <option key={s} value={s}>{s.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}</option>)}
+          {TICKET_STATUSES.map(s => <option key={s} value={s}>{t[`status.${s}`] || s}</option>)}
         </select>
         <select className="input" value={filterPriority} onChange={e => setFilterPriority(e.target.value)} style={{ width: 140 }}>
           <option value="">{t['support.allPriorities']}</option>
-          {TICKET_PRIORITIES.map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
+          {TICKET_PRIORITIES.map(p => <option key={p} value={p}>{t[`status.${p}`] || p}</option>)}
         </select>
       </div>
 
       {loading ? <LoadingSpinner /> : (
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div className="card-surface table-scroll" style={{ overflow: "hidden auto" }}>
+          <table className="t-table">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
+              <tr>
                 {[t['support.ticketNumber'], t['support.ticketTitle'], t['support.client'], t['support.assignedTo'], t['support.priority'], t['support.status'], t['support.created'], t['support.actions']].map(h => (
-                  <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'start', fontSize: '0.75rem', color: 'var(--fg-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+                  <th key={h}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {tickets.map(tk => (
-                <tr key={tk._id} style={{ borderBottom: '1px solid var(--border)' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = '')}>
-                  <td style={{ padding: '0.875rem 1rem', fontWeight: 600, color: 'var(--accent)', fontSize: '0.82rem' }}>{tk.ticketNumber}</td>
-                  <td style={{ padding: '0.875rem 1rem', maxWidth: 240 }}>
+                <tr key={tk._id}>
+                  <td style={{ fontWeight: 600, color: 'var(--accent)', fontSize: '0.82rem' }}>{tk.ticketNumber}</td>
+                  <td style={{ maxWidth: 240 }}>
                     <p style={{ fontWeight: 500, fontSize: '0.875rem', color: 'var(--fg-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tk.title}</p>
                     {tk.description && <p style={{ fontSize: '0.72rem', color: 'var(--fg-4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tk.description}</p>}
                   </td>
-                  <td style={{ padding: '0.875rem 1rem', fontSize: '0.875rem', color: 'var(--fg-3)' }}>{tk.customer?.name || '—'}</td>
-                  <td style={{ padding: '0.875rem 1rem', fontSize: '0.875rem', color: 'var(--fg-3)' }}>{tk.assignee?.name || '—'}</td>
-                  <td style={{ padding: '0.875rem 1rem' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: priorityColor[tk.priority] || 'var(--fg-3)', background: (priorityColor[tk.priority] || '#6b7280') + '15', padding: '0.2rem 0.6rem', borderRadius: 20 }}>
-                      {(tk.priority || 'medium').toUpperCase()}
-                    </span>
+                  <td style={{ fontSize: '0.875rem', color: 'var(--fg-3)' }}>{tk.customer?.name || '—'}</td>
+                  <td style={{ fontSize: '0.875rem', color: 'var(--fg-3)' }}>{tk.assignee?.name || '—'}</td>
+                  <td>
+                    <StatusBadge status={tk.priority || 'medium'} />
                   </td>
-                  <td style={{ padding: '0.875rem 1rem' }}><StatusBadge status={tk.status} /></td>
-                  <td style={{ padding: '0.875rem 1rem', fontSize: '0.78rem', color: 'var(--fg-4)' }}>{new Date(tk.createdAt).toLocaleDateString()}</td>
-                  <td style={{ padding: '0.875rem 1rem' }}>
+                  <td><StatusBadge status={tk.status} /></td>
+                  <td style={{ fontSize: '0.78rem', color: 'var(--fg-4)' }}>{new Date(tk.createdAt).toLocaleDateString()}</td>
+                  <td>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
                       <button className="btn btn-secondary" onClick={() => openEdit(tk)} style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}>{t.edit}</button>
                       <button className="btn btn-danger" onClick={() => setDeleteTarget(tk)} style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}>{t.delete}</button>
@@ -195,13 +191,13 @@ export default function SupportTicketsPage() {
             <div>
               <label className="label">{t.status}</label>
               <select className="input" value={form.status || 'open'} onChange={e => setForm((p: any) => ({ ...p, status: e.target.value }))}>
-                {TICKET_STATUSES.map(s => <option key={s} value={s}>{s.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}</option>)}
+                {TICKET_STATUSES.map(s => <option key={s} value={s}>{t[`status.${s}`] || s}</option>)}
               </select>
             </div>
             <div>
               <label className="label">{t.priority}</label>
               <select className="input" value={form.priority || 'medium'} onChange={e => setForm((p: any) => ({ ...p, priority: e.target.value }))}>
-                {TICKET_PRIORITIES.map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
+                {TICKET_PRIORITIES.map(p => <option key={p} value={p}>{t[`status.${p}`] || p}</option>)}
               </select>
             </div>
           </div>

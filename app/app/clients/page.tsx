@@ -15,11 +15,12 @@ const IC = ({ d, size = 16 }: { d: string | string[]; size?: number }) => (
   </svg>
 )
 
-function Stat({ label, value, color }: { label: string; value: number; color: string }) {
+function Stat({ label, value, color, sub }: { label: string; value: number | string; color?: string; sub?: string }) {
   return (
-    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '0.875rem 1.25rem' }}>
-      <p style={{ fontSize: '0.72rem', color: 'var(--fg-4)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500, marginBottom: '0.3rem' }}>{label}</p>
-      <p style={{ fontSize: '1.5rem', fontWeight: 700, color }}>{value}</p>
+    <div className="kpi" style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
+      <span className="kpi-label" style={{ marginBottom: 0 }}>{label}</span>
+      <span className="kpi-value ltr-num" style={color ? { color } : undefined}>{value}</span>
+      {sub && <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-4)' }}>{sub}</span>}
     </div>
   )
 }
@@ -79,11 +80,11 @@ export default function ClientsPage() {
   }
 
   return (
-    <div style={{ padding: '1.75rem 2rem', flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+    <div className="page-content">
+      <div className="page-head">
         <div>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--fg-1)' }}>{t.clients}</h1>
-          <p style={{ fontSize: '0.8rem', color: 'var(--fg-4)', marginTop: 2 }}>{t.clientsSubtitle}</p>
+          <h1>{t.clients}</h1>
+          <p className="sub">{t.clientsSubtitle}</p>
         </div>
         {hasPermission('crm.write') && (
           <button className="btn btn-primary" onClick={openCreate} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -92,7 +93,7 @@ export default function ClientsPage() {
         )}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '0.875rem', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
         <Stat label={t.totalClients} value={counts.total}    color="var(--fg-1)" />
         <Stat label={t.active}       value={counts.active}   color="#059669" />
         <Stat label={t.leads}        value={counts.leads}    color="#2563eb" />
@@ -103,26 +104,24 @@ export default function ClientsPage() {
         <input className="input" placeholder={t.searchClients} value={search} onChange={e => setSearch(e.target.value)} style={{ width: 220 }} />
         <select className="input" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ width: 150 }}>
           <option value="">{t.allStatuses}</option>
-          {STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+          {STATUSES.map(s => <option key={s} value={s}>{t[`status.${s}`] || s}</option>)}
         </select>
       </div>
 
       {loading ? <LoadingSpinner /> : (
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div className="card-surface table-scroll" style={{ overflow: "hidden auto" }}>
+          <table className="t-table">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
+              <tr>
                 {[t.clients, t.company, t.email, t.status, t.priority, t.actions].map(h => (
-                  <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'start', fontSize: '0.75rem', color: 'var(--fg-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+                  <th key={h}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {customers.map(c => (
-                <tr key={c._id} style={{ borderBottom: '1px solid var(--border)' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = '')}>
-                  <td style={{ padding: '0.875rem 1rem' }}>
+                <tr key={c._id}>
+                  <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                       <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--accent)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.85rem', flexShrink: 0 }}>
                         {(c.name || '?')[0].toUpperCase()}
@@ -133,14 +132,14 @@ export default function ClientsPage() {
                       </div>
                     </div>
                   </td>
-                  <td style={{ padding: '0.875rem 1rem', color: 'var(--fg-3)', fontSize: '0.875rem' }}>{c.company || '—'}</td>
-                  <td style={{ padding: '0.875rem 1rem' }}>
+                  <td style={{ color: 'var(--fg-3)', fontSize: '0.875rem' }}>{c.company || '—'}</td>
+                  <td>
                     <p style={{ fontSize: '0.82rem', color: 'var(--fg-3)' }}>{c.email || '—'}</p>
                     <p style={{ fontSize: '0.75rem', color: 'var(--fg-4)' }}>{c.phone || ''}</p>
                   </td>
-                  <td style={{ padding: '0.875rem 1rem' }}><StatusBadge status={c.status || 'lead'} /></td>
-                  <td style={{ padding: '0.875rem 1rem' }}><StatusBadge status={c.priority || 'medium'} /></td>
-                  <td style={{ padding: '0.875rem 1rem' }}>
+                  <td><StatusBadge status={c.status || 'lead'} /></td>
+                  <td><StatusBadge status={c.priority || 'medium'} /></td>
+                  <td>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
                       {hasPermission('crm.write') && (
                         <button className="btn btn-secondary" onClick={() => openEdit(c)} style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}>{t.edit}</button>
@@ -178,13 +177,13 @@ export default function ClientsPage() {
             <div>
               <label className="label">{t.status}</label>
               <select className="input" value={form.status || 'lead'} onChange={e => setForm((p: any) => ({ ...p, status: e.target.value }))}>
-                {STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                {STATUSES.map(s => <option key={s} value={s}>{t[`status.${s}`] || s}</option>)}
               </select>
             </div>
             <div>
               <label className="label">{t.priority}</label>
               <select className="input" value={form.priority || 'medium'} onChange={e => setForm((p: any) => ({ ...p, priority: e.target.value }))}>
-                {PRIORITIES.map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
+                {PRIORITIES.map(p => <option key={p} value={p}>{t[`status.${p}`] || p}</option>)}
               </select>
             </div>
           </div>

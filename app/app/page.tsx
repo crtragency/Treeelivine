@@ -2,128 +2,131 @@
 import { useState, useEffect } from 'react'
 import { useApp } from '@/contexts/AppContext'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import StatusBadge from '@/components/ui/StatusBadge'
 import Link from 'next/link'
 
-const IC = ({ d, size = 18, stroke = 'currentColor' }: { d: string; size?: number; stroke?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+const IC = ({ d, size = 15 }: { d: string; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
     <path d={d} />
   </svg>
 )
 
 const Icons = {
-  Revenue: () => <IC d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />,
-  Expenses: () => <IC d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6M2 20h.01" />,
-  Profit: () => <IC d="m22 7-8.5 8.5-5-5L2 17M16 7h6v6" />,
-  Customers: () => <IC d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />,
-  Projects: () => <IC d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />,
-  Tasks: () => <IC d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />,
-  Overdue: () => <IC d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01" />,
-  Invoices: () => <IC d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" />,
-  PlusCircle: () => <IC d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v8M8 12h8" />,
-  UserPlus: () => <IC d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M8.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM20 8v6M23 11h-6" />,
-  FolderPlus: () => <IC d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2zM12 11v6M9 14h6" />,
-  Receipt: () => <IC d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1zM16 8H8M16 12H8M12 16H8" />,
-  Activity: () => <IC d="M22 12h-4l-3 9L9 3l-3 9H2" />,
+  Plus: () => <IC d="M12 5v14M5 12h14" size={14} />,
+  Folder: () => <IC d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" size={14} />,
+  Invoice: () => <IC d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8" size={14} />,
+  User: () => <IC d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M8.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM20 8v6M23 11h-6" size={14} />,
+  Receipt: () => <IC d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1zM16 8H8M16 12H8" size={14} />,
 }
 
 const DATE_RANGES = [
-  { key: 'today', label: 'Today' },
-  { key: '7d', label: '7D' },
-  { key: '30d', label: '30D' },
-  { key: 'month', label: 'Month' },
-  { key: 'quarter', label: 'Quarter' },
+  { key: 'today', label: { ar: 'اليوم', en: 'Today' } },
+  { key: '7d', label: { ar: '7 أيام', en: '7D' } },
+  { key: '30d', label: { ar: '30 يوم', en: '30D' } },
+  { key: 'month', label: { ar: 'الشهر', en: 'Month' } },
+  { key: 'quarter', label: { ar: 'الربع', en: 'Quarter' } },
 ]
 
-function KpiTile({ title, value, icon, color, sub }: { title: string; value: string | number; icon: React.ReactNode; color: string; sub?: string }) {
+const MONTH_AR = ['ينا', 'فبر', 'مار', 'أبر', 'ماي', 'يون', 'يول', 'أغس', 'سبت', 'أكت', 'نوف', 'ديس']
+const MONTH_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+function Kpi({ label, value, unit, sub, subTone }: { label: string; value: string; unit?: string; sub?: string; subTone?: 'up' | 'down' }) {
   return (
-    <div style={{
-      background: 'var(--surface)',
-      border: '1px solid var(--border)',
-      borderRadius: 12,
-      padding: '1.25rem',
-      display: 'flex',
-      alignItems: 'flex-start',
-      gap: '0.875rem',
-      transition: 'box-shadow 0.2s',
-    }}>
-      <div style={{
-        width: 42, height: 42, borderRadius: 10,
-        background: color + '18',
-        color,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0,
-      }}>
-        {icon}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: '0.75rem', color: 'var(--fg-4)', marginBottom: '0.25rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{title}</p>
-        <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--fg-1)', lineHeight: 1.1 }}>{value}</p>
-        {sub && <p style={{ fontSize: '0.72rem', color: 'var(--fg-4)', marginTop: '0.2rem' }}>{sub}</p>}
-      </div>
+    <div className="kpi" style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
+      <span className="kpi-label" style={{ marginBottom: 0 }}>{label}</span>
+      <span className="kpi-value">
+        <span className="ltr-num">{value}</span>
+        {unit && <span className="unit" style={{ marginInlineStart: 6 }}>{unit}</span>}
+      </span>
+      {sub && (
+        <span className={subTone ? `kpi-delta ${subTone === 'down' ? 'kpi-delta-down' : 'kpi-delta-up'}` : undefined}
+          style={!subTone ? { fontSize: 'var(--fs-xs)', color: 'var(--fg-4)' } : { marginTop: 0 }}>
+          {sub}
+        </span>
+      )}
     </div>
   )
 }
 
-function QuickAction({ href, icon, label, color }: { href: string; icon: React.ReactNode; label: string; color: string }) {
+/* Grouped monthly bars — revenue vs expenses, real data, hover tooltip */
+function RevenueChart({ monthly, cur, lang, t }: { monthly: any[]; cur: string; lang: string; t: any }) {
+  const [hover, setHover] = useState<number | null>(null)
+  const names = lang === 'ar' ? MONTH_AR : MONTH_EN
+  const max = Math.max(1, ...monthly.flatMap((m: any) => [m.revenue, m.expenses]))
+  const fmt = (n: number) => n.toLocaleString('en-US')
+
   return (
-    <Link href={href} style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem',
-      padding: '1rem 0.75rem',
-      background: 'var(--surface)',
-      border: '1px solid var(--border)',
-      borderRadius: 12,
-      textDecoration: 'none',
-      transition: 'background 0.15s, border-color 0.15s',
-    }}
-      onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = color + '0d'; (e.currentTarget as HTMLAnchorElement).style.borderColor = color + '44' }}
-      onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--surface)'; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--border)' }}
-    >
-      <div style={{ width: 38, height: 38, borderRadius: 9, background: color + '18', color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {icon}
+    <div style={{ position: 'relative' }}>
+      <div style={{ display: 'flex', alignItems: 'stretch', gap: 6, height: 150, direction: 'ltr' }}>
+        {monthly.map((m: any, i: number) => {
+          const [y, mo] = m.key.split('-').map(Number)
+          const label = names[mo - 1]
+          const isHover = hover === i
+          return (
+            <div
+              key={m.key}
+              onMouseEnter={() => setHover(i)}
+              onMouseLeave={() => setHover(null)}
+              style={{
+                flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0,
+                cursor: 'default', borderRadius: 6, padding: '4px 2px 0',
+                background: isHover ? 'var(--bg-hover)' : 'transparent',
+              }}
+            >
+              <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 2 }}>
+                <div style={{
+                  width: '38%', maxWidth: 14,
+                  height: `${(m.revenue / max) * 100}%`, minHeight: m.revenue > 0 ? 4 : 1,
+                  background: 'var(--chart-1)',
+                  borderRadius: '4px 4px 0 0',
+                }} />
+                <div style={{
+                  width: '38%', maxWidth: 14,
+                  height: `${(m.expenses / max) * 100}%`, minHeight: m.expenses > 0 ? 4 : 1,
+                  background: 'var(--chart-2)',
+                  borderRadius: '4px 4px 0 0',
+                }} />
+              </div>
+              <span style={{
+                fontSize: 10, textAlign: 'center',
+                fontFamily: lang === 'ar' ? 'var(--font-sans)' : 'var(--font-mono)',
+                color: isHover ? 'var(--fg-2)' : 'var(--fg-5)', whiteSpace: 'nowrap',
+              }}>{label}{mo === 1 ? ` ${String(y).slice(2)}` : ''}</span>
+            </div>
+          )
+        })}
       </div>
-      <span style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--fg-2)', textAlign: 'center', lineHeight: 1.3 }}>{label}</span>
-    </Link>
-  )
-}
 
-function SimpleBarChart({ revenue, expenses }: { revenue: number; expenses: number }) {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  const now = new Date()
-  const currentMonth = now.getMonth()
-  const seed = revenue + expenses
-
-  const bars = months.map((m, i) => {
-    const factor = i <= currentMonth ? (0.4 + (((seed * (i + 7) * 13) % 100) / 100) * 0.6) : 0
-    const revVal = i === currentMonth ? 1 : factor
-    const expFactor = i <= currentMonth ? (0.3 + (((seed * (i + 3) * 17) % 100) / 100) * 0.5) : 0
-    const expVal = i === currentMonth ? expenses / Math.max(revenue, 1) : expFactor * 0.7
-    return { m, rev: Math.min(revVal, 1), exp: Math.min(expVal, 1), active: i === currentMonth }
-  })
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.35rem', height: 80, paddingBottom: 4 }}>
-      {bars.map(({ m, rev, exp, active }) => (
-        <div key={m} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-          <div style={{ width: '100%', display: 'flex', alignItems: 'flex-end', gap: 1, height: 64 }}>
-            <div style={{
-              flex: 1, background: active ? 'var(--accent)' : 'var(--accent)44',
-              borderRadius: '3px 3px 0 0',
-              height: `${rev * 100}%`, minHeight: rev > 0 ? 4 : 0,
-              transition: 'height 0.3s',
-            }} />
-            <div style={{
-              flex: 1, background: active ? '#ef4444cc' : '#ef444433',
-              borderRadius: '3px 3px 0 0',
-              height: `${exp * 100}%`, minHeight: exp > 0 ? 4 : 0,
-              transition: 'height 0.3s',
-            }} />
+      {hover !== null && (
+        <div style={{
+          position: 'absolute', top: -8, insetInlineStart: '50%', transform: 'translate(-50%, -100%)',
+          background: 'var(--bg-surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)',
+          boxShadow: 'var(--shadow-md)', padding: '8px 12px', pointerEvents: 'none', zIndex: 5,
+          fontSize: 'var(--fs-xs)', whiteSpace: 'nowrap',
+        }}>
+          <div style={{ fontWeight: 600, color: 'var(--fg-1)', marginBottom: 4, fontFamily: 'var(--font-mono)' }}>{monthly[hover].key}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--fg-2)' }}>
+            <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--chart-1)' }} />
+            {t.revenue}: <span className="ltr-num" style={{ fontFamily: 'var(--font-mono)' }}>{cur} {fmt(monthly[hover].revenue)}</span>
           </div>
-          <span style={{ fontSize: '0.6rem', color: active ? 'var(--fg-2)' : 'var(--fg-5)', fontWeight: active ? 600 : 400 }}>{m}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--fg-2)', marginTop: 2 }}>
+            <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--chart-2)' }} />
+            {t.expenses}: <span className="ltr-num" style={{ fontFamily: 'var(--font-mono)' }}>{cur} {fmt(monthly[hover].expenses)}</span>
+          </div>
         </div>
-      ))}
+      )}
     </div>
   )
 }
+
+const PIPELINE_STAGES = [
+  { key: 'lead', ar: 'محتمل', en: 'Lead', bg: 'var(--pipeline-prospect)' },
+  { key: 'prospect', ar: 'مؤهل', en: 'Prospect', bg: 'var(--pipeline-qualified)' },
+  { key: 'negotiation', ar: 'تفاوض', en: 'Negotiation', bg: 'var(--pipeline-negotiation)' },
+  { key: 'active', ar: 'نشط', en: 'Active', bg: 'var(--pipeline-active)' },
+  { key: 'inactive', ar: 'غير نشط', en: 'Inactive', bg: 'var(--pipeline-inactive)' },
+  { key: 'churned', ar: 'مفقود', en: 'Lost', bg: 'var(--pipeline-lost)' },
+]
 
 export default function DashboardPage() {
   const { t, settings, user, lang } = useApp()
@@ -140,113 +143,177 @@ export default function DashboardPage() {
   }, [range])
 
   const cur = settings?.defaultCurrency || 'SAR'
+  const isAr = lang === 'ar'
   const firstName = user?.name?.split(' ')[0] || user?.email?.split('@')[0] || ''
   const hr = new Date().getHours()
   const greeting = hr < 12 ? t.greetingMorning : hr < 17 ? t.greetingAfternoon : t.greetingEvening
-  const locale = lang === 'ar' ? 'ar-SA' : 'en-US'
+  const locale = isAr ? 'ar-u-ca-gregory' : 'en-US'
   const todayStr = new Date().toLocaleDateString(locale, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+  const fmt = (n: number) => (n || 0).toLocaleString('en-US')
+
+  const actLabel = (type: string) =>
+    type === 'invoice' ? t.invoiceActivity : type === 'task' ? t.taskActivity : t.customerActivity
 
   return (
-    <div style={{ padding: 'clamp(1rem,3vw,1.75rem) clamp(1rem,4vw,2rem)', flex: 1, minHeight: 0 }}>
+    <div className="page-content">
 
-      {/* Welcome Header */}
-      <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+      {/* ── Page head ─────────────────────────────────────── */}
+      <div className="page-head">
         <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--fg-1)', marginBottom: '0.25rem' }}>
-            {greeting}, {firstName}
-          </h1>
-          <p style={{ fontSize: '0.875rem', color: 'var(--fg-4)' }}>{todayStr} — {t.greetingSubtitle}</p>
+          <h1>{greeting}، {firstName}</h1>
+          <div className="sub">{todayStr} — {t.greetingSubtitle}</div>
         </div>
-        <div style={{ display: 'flex', gap: '0.3rem', background: 'var(--surface2)', borderRadius: 8, padding: '0.25rem' }}>
-          {DATE_RANGES.map(r => (
-            <button key={r.key} onClick={() => setRange(r.key)} style={{
-              padding: '0.3rem 0.7rem', fontSize: '0.78rem', fontWeight: 500, border: 'none', cursor: 'pointer',
-              borderRadius: 6,
-              background: range === r.key ? 'var(--surface)' : 'transparent',
-              color: range === r.key ? 'var(--fg-1)' : 'var(--fg-4)',
-              boxShadow: range === r.key ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-              transition: 'all 0.15s',
-            }}>{r.label}</button>
-          ))}
+        <div className="actions">
+          <div className="seg">
+            {DATE_RANGES.map(r => (
+              <button key={r.key} className={range === r.key ? 'on' : ''} onClick={() => setRange(r.key)}>
+                {isAr ? r.label.ar : r.label.en}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {loading ? <LoadingSpinner /> : data ? (
         <>
-          {/* KPI Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-            <KpiTile title={t.revenue} value={`${cur} ${(data.revenue || 0).toLocaleString()}`} icon={<Icons.Revenue />} color="#4f6831" />
-            <KpiTile title={t.expenses} value={`${cur} ${(data.expenses || 0).toLocaleString()}`} icon={<Icons.Expenses />} color="#ef4444" />
-            <KpiTile title={t.profit} value={`${cur} ${(data.profit || 0).toLocaleString()}`} icon={<Icons.Profit />} color="#0284c7" sub={(data.revenue > 0 ? ((data.profit / data.revenue) * 100).toFixed(1) : '0') + `% ${t.marginLabel}`} />
-            <KpiTile title={t.customers} value={data.customers || 0} icon={<Icons.Customers />} color="#7c3aed" />
-            <KpiTile title={t.activeProjects} value={data.activeProjects || 0} icon={<Icons.Projects />} color="#d97706" />
-            <KpiTile title={t.pendingTasks} value={data.pendingTasks || 0} icon={<Icons.Tasks />} color="#0891b2" />
-            <KpiTile title={t.overdueTasks} value={data.overdueTasks || 0} icon={<Icons.Overdue />} color="#dc2626" />
-            <KpiTile title={t.unpaidInvoices} value={data.unpaidInvoices || 0} icon={<Icons.Invoices />} color="#ca8a04" />
+          {/* ── KPI row ─────────────────────────────────────── */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+            <Kpi label={t.activeCustomers} value={fmt(data.activeCustomers)} sub={`${fmt(data.totalCustomers)} ${t.customers}`} />
+            <Kpi label={t.collected} value={fmt(data.collected)} unit={cur} sub={`${t.net}: ${cur} ${fmt(data.net)}`} subTone={data.net >= 0 ? 'up' : 'down'} />
+            <Kpi label={t.unpaidInvoices} value={fmt(data.unpaidAmt)} unit={cur} sub={`${fmt(data.unpaidInvoices)} ${t.invoiceActivity}`} subTone={data.unpaidInvoices > 0 ? 'down' : 'up'} />
+            <Kpi label={t.overdueTasks} value={fmt(data.overdueTasks)} sub={`${fmt(data.openTasks)} ${t.openTasks}`} subTone={data.overdueTasks > 0 ? 'down' : 'up'} />
           </div>
 
-          {/* Bottom row: Chart + Quick Actions + Activity */}
-          <div className="dash-bottom-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: '1.25rem', marginBottom: '1.5rem' }}>
+          {/* ── Attention table + activity feed ─────────────── */}
+          <div className="dash-bottom-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, alignItems: 'start' }}>
 
-            {/* Revenue Chart Card */}
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <div>
-                  <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--fg-1)' }}>{t.revenueVsExpenses}</h3>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--fg-4)', marginTop: 2 }}>{t.monthlyOverview} — {new Date().getFullYear()}</p>
-                </div>
-                <div style={{ display: 'flex', gap: '1rem', fontSize: '0.72rem', color: 'var(--fg-4)' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--accent)', display: 'inline-block' }} />
-                    {t.revenue}
-                  </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 2, background: '#ef4444cc', display: 'inline-block' }} />
-                    {t.expenses}
-                  </span>
-                </div>
+            <div className="card-surface">
+              <div className="card-head">
+                <h3>{t.projectsAttention}</h3>
+                <Link href="/app/projects" className="btn btn-ghost btn-sm">{t.viewAll}</Link>
               </div>
-              <SimpleBarChart revenue={data.revenue || 50000} expenses={data.expenses || 30000} />
+              {data.projectsAttention?.length ? (
+                <div className="table-scroll">
+                  <table className="t-table">
+                    <thead>
+                      <tr>
+                        <th>{t.project}</th>
+                        <th>{t.customer}</th>
+                        <th>{t.status}</th>
+                        <th style={{ textAlign: 'end' }}>{t.overdueCol}</th>
+                        <th style={{ textAlign: 'end' }}>{t.progressCol}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.projectsAttention.map((p: any) => (
+                        <tr key={p.id}>
+                          <td className="td-name">
+                            <Link href={`/app/projects/${p.id}/brief`} style={{ color: 'inherit' }}>{p.name}</Link>
+                          </td>
+                          <td>{p.customer || '—'}</td>
+                          <td><StatusBadge status={p.status} label={t[p.status]} /></td>
+                          <td className="ltr-num" style={{ textAlign: 'end', fontFamily: 'var(--font-mono)', color: p.overdue > 0 ? 'var(--danger-600)' : 'var(--fg-4)' }}>{p.overdue}</td>
+                          <td style={{ textAlign: 'end' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                              <span className="progress" style={{ width: 72 }}><i style={{ width: `${p.progress}%` }} /></span>
+                              <span className="ltr-num" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg-3)', minWidth: 30 }}>{p.progress}%</span>
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--fg-4)', fontSize: 'var(--fs-sm)' }}>
+                  {t.nothingAttention}
+                </div>
+              )}
             </div>
 
-            {/* Quick Actions */}
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '1.25rem' }}>
-              <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--fg-1)', marginBottom: '0.875rem' }}>{t.quickActions}</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                <QuickAction href="/app/invoices"   icon={<Icons.PlusCircle />} label={t.newInvoice}    color="#4f6831" />
-                <QuickAction href="/app/clients"    icon={<Icons.UserPlus />}   label={t.addCustomer}   color="#7c3aed" />
-                <QuickAction href="/app/projects"   icon={<Icons.FolderPlus />} label={t.newProject}    color="#d97706" />
-                <QuickAction href="/app/financial"  icon={<Icons.Receipt />}    label={t.logExpense}    color="#ef4444" />
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          {data.recentActivity?.length > 0 && (
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                <span style={{ color: 'var(--accent)' }}><Icons.Activity /></span>
-                <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--fg-1)' }}>{t.recentActivity}</h3>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                {data.recentActivity.map((a: any, i: number) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 0.75rem', borderRadius: 8, background: 'var(--surface2)' }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: '0.85rem', color: 'var(--fg-2)' }}>{a.text}</p>
-                      <p style={{ fontSize: '0.72rem', color: 'var(--fg-4)' }}>{a.time}</p>
+            <div className="card-surface">
+              <div className="card-head"><h3>{t.recentActivity}</h3></div>
+              <div style={{ padding: '4px var(--space-4) var(--space-3)' }}>
+                {data.activity?.length ? data.activity.map((a: any, i: number) => (
+                  <div key={i} style={{
+                    padding: '10px 0', display: 'flex', gap: 10, alignItems: 'flex-start',
+                    borderBottom: i < data.activity.length - 1 ? '1px solid var(--border-1)' : 'none',
+                  }}>
+                    <span className="av av-sm" style={{ fontSize: 9 }}>{actLabel(a.type)?.slice(0, 2)}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-1)', lineHeight: 1.45, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontWeight: 500 }}>{actLabel(a.type)}</span> · {a.title}
+                      </div>
+                      <div style={{ marginTop: 3, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <StatusBadge status={a.status} label={t[a.status]} />
+                        <span style={{ fontSize: 10.5, color: 'var(--fg-5)', fontFamily: 'var(--font-mono)' }}>
+                          {a.at ? new Date(a.at).toLocaleDateString(locale, { month: 'short', day: 'numeric' }) : ''}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <div style={{ padding: 'var(--space-6) 0', textAlign: 'center', color: 'var(--fg-4)', fontSize: 'var(--fs-sm)' }}>{t.noActivity}</div>
+                )}
               </div>
             </div>
-          )}
+          </div>
+
+          {/* ── Chart + quick actions ───────────────────────── */}
+          <div className="dash-bottom-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, alignItems: 'start' }}>
+            <div className="card-surface">
+              <div className="card-head">
+                <div>
+                  <h3>{t.revenueVsExpenses}</h3>
+                  <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-4)', marginTop: 2 }}>{t.monthlyOverview} — {new Date().getFullYear()}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 14, fontSize: 'var(--fs-xs)', color: 'var(--fg-3)' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{ width: 9, height: 9, borderRadius: 2, background: 'var(--chart-1)' }} /> {t.revenue}
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{ width: 9, height: 9, borderRadius: 2, background: 'var(--chart-2)' }} /> {t.expenses}
+                  </span>
+                </div>
+              </div>
+              <div style={{ padding: 'var(--space-5) var(--space-4) var(--space-4)' }}>
+                <RevenueChart monthly={data.monthly || []} cur={cur} lang={lang} t={t} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div className="card-surface">
+                <div className="card-head"><h3>{t.quickActions}</h3></div>
+                <div style={{ padding: 'var(--space-3) var(--space-4) var(--space-4)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Link href="/app/invoices" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.Invoice /> {t.newInvoice}</Link>
+                  <Link href="/app/clients" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.User /> {t.addCustomer}</Link>
+                  <Link href="/app/projects" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.Folder /> {t.newProject}</Link>
+                  <Link href="/app/financial" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.Receipt /> {t.logExpense}</Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── CRM pipeline strip ──────────────────────────── */}
+          <div className="card-surface">
+            <div className="card-head">
+              <h3>{t.pipelineTitle}</h3>
+              <Link href="/app/clients" className="btn btn-ghost btn-sm">{t.viewAll}</Link>
+            </div>
+            <div style={{ padding: 'var(--space-4)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 }}>
+              {PIPELINE_STAGES.map(s => (
+                <div key={s.key} style={{ borderRadius: 'var(--radius-md)', padding: '10px 12px', background: s.bg, border: '1px solid var(--border-1)' }}>
+                  <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-3)', fontWeight: 500 }}>{isAr ? s.ar : s.en}</div>
+                  <div className="ltr-num" style={{ fontSize: 20, fontWeight: 600, color: 'var(--fg-1)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>
+                    {data.pipeline?.[s.key] || 0}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4rem 1rem', color: 'var(--fg-4)', gap: '0.75rem' }}>
-          <span style={{ color: 'var(--fg-5)' }}><Icons.Activity /></span>
-          <p style={{ fontSize: '0.9rem' }}>No data available for this period</p>
-        </div>
+        <div style={{ padding: 'var(--space-12)', textAlign: 'center', color: 'var(--fg-4)' }}>{t.noData}</div>
       )}
     </div>
   )

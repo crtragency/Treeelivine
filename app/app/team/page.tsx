@@ -58,9 +58,9 @@ export default function TeamPage() {
   }, [employees.length])
 
   return (
-    <div style={{ padding: '1.5rem', flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{t['team.title'] || t.team}</h2>
+    <div className="page-content">
+      <div className="page-head">
+        <h2 style={{ fontSize: 'var(--fs-2xl)', fontWeight: 600, color: 'var(--fg-1)', letterSpacing: '-0.01em' }}>{t['team.title'] || t.team}</h2>
         {hasPermission('team.write') && <button className="btn btn-primary" onClick={openCreate}>+ {t.addEmployee}</button>}
       </div>
 

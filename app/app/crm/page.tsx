@@ -62,13 +62,13 @@ export default function CRMPage() {
   }
 
   return (
-    <div style={{ padding: '1.5rem', flex: 1 }}>
+    <div className="page-content">
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, flex: 1 }}>{t.crm || 'CRM'}</h2>
+        <h2 style={{ fontSize: 'var(--fs-2xl)', fontWeight: 600, color: 'var(--fg-1)', letterSpacing: '-0.01em', flex: 1 }}>{t.crm || 'CRM'}</h2>
         <input className="input" placeholder={t.search || 'Search...'} value={search} onChange={e => setSearch(e.target.value)} style={{ width: 200 }} />
         <select className="input" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ width: 140 }}>
           <option value="">{t.allStatuses || 'All Statuses'}</option>
-          {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+          {STATUSES.map(s => <option key={s} value={s}>{t[`status.${s}`] || s}</option>)}
         </select>
         {hasPermission('crm.write') && (
           <button className="btn btn-primary" onClick={openCreate}>+ {t.addCustomer || 'Add Customer'}</button>
@@ -77,24 +77,24 @@ export default function CRMPage() {
 
       {loading ? <LoadingSpinner /> : (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="t-table">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
+              <tr>
                 {['Name', 'Company', 'Email', 'Phone', 'Status', 'Priority', 'Actions'].map(h => (
-                  <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'start', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{h}</th>
+                  <th key={h}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {customers.map(c => (
-                <tr key={c._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '0.75rem 1rem', fontWeight: 500 }}>{c.name}</td>
-                  <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>{c.company || '-'}</td>
-                  <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>{c.email || '-'}</td>
-                  <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>{c.phone || '-'}</td>
-                  <td style={{ padding: '0.75rem 1rem' }}><StatusBadge status={c.status || 'lead'} /></td>
-                  <td style={{ padding: '0.75rem 1rem' }}><StatusBadge status={c.priority || 'medium'} /></td>
-                  <td style={{ padding: '0.75rem 1rem' }}>
+                <tr key={c._id}>
+                  <td style={{ fontWeight: 500 }}>{c.name}</td>
+                  <td style={{ color: 'var(--text-muted)' }}>{c.company || '-'}</td>
+                  <td style={{ color: 'var(--text-muted)' }}>{c.email || '-'}</td>
+                  <td style={{ color: 'var(--text-muted)' }}>{c.phone || '-'}</td>
+                  <td><StatusBadge status={c.status || 'lead'} /></td>
+                  <td><StatusBadge status={c.priority || 'medium'} /></td>
+                  <td>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       {hasPermission('crm.write') && <button className="btn btn-secondary" onClick={() => openEdit(c)} style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>Edit</button>}
                       {hasPermission('crm.write') && <button className="btn btn-danger" onClick={() => setDeleteTarget(c)} style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>Delete</button>}
@@ -121,13 +121,13 @@ export default function CRMPage() {
             <div>
               <label className="label">Status</label>
               <select className="input" value={form.status || 'lead'} onChange={e => setForm((p: any) => ({ ...p, status: e.target.value }))}>
-                {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                {STATUSES.map(s => <option key={s} value={s}>{t[`status.${s}`] || s}</option>)}
               </select>
             </div>
             <div>
               <label className="label">Priority</label>
               <select className="input" value={form.priority || 'medium'} onChange={e => setForm((p: any) => ({ ...p, priority: e.target.value }))}>
-                {PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}
+                {PRIORITIES.map(p => <option key={p} value={p}>{t[`status.${p}`] || p}</option>)}
               </select>
             </div>
           </div>

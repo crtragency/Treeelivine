@@ -88,11 +88,11 @@ export default function HRPayrollPage() {
   const COLORS = ['#4f6831','#2563eb','#7c3aed','#d97706','#059669','#ef4444','#0891b2','#ca8a04']
 
   return (
-    <div style={{ padding: '1.75rem 2rem', flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+    <div className="page-content">
+      <div className="page-head">
         <div>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--fg-1)' }}>{t.hrTitle}</h1>
-          <p style={{ fontSize: '0.8rem', color: 'var(--fg-4)', marginTop: 2 }}>{t.hrSubtitle}</p>
+          <h1>{t.hrTitle}</h1>
+          <p className="sub">{t.hrSubtitle}</p>
         </div>
         {hasPermission('team.write') && (
           <button className="btn btn-primary" onClick={openCreateEmp} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -156,24 +156,22 @@ export default function HRPayrollPage() {
 
           {/* Payroll log */}
           <h2 style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--fg-1)', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t.payrollHistory}</h2>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="card-surface table-scroll" style={{ overflow: "hidden auto" }}>
+            <table className="t-table">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
+                <tr>
                   {[t.name, t.description, t.amount, t.date].map(h => (
-                    <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'start', fontSize: '0.75rem', color: 'var(--fg-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+                    <th key={h}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {expenses.map(exp => (
-                  <tr key={exp._id} style={{ borderBottom: '1px solid var(--border)' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = '')}>
-                    <td style={{ padding: '0.875rem 1rem', fontSize: '0.875rem', color: 'var(--fg-2)', fontWeight: 500 }}>{exp.employeeId?.name || employees.find(e => e._id === (exp.employeeId?._id || exp.employeeId))?.name || '—'}</td>
-                    <td style={{ padding: '0.875rem 1rem', fontSize: '0.875rem', color: 'var(--fg-3)' }}>{exp.description || '—'}</td>
-                    <td style={{ padding: '0.875rem 1rem', fontWeight: 700, color: '#4f6831' }}>{cur} {(exp.amount || 0).toLocaleString()}</td>
-                    <td style={{ padding: '0.875rem 1rem', fontSize: '0.82rem', color: 'var(--fg-4)' }}>{exp.date ? new Date(exp.date).toLocaleDateString() : '—'}</td>
+                  <tr key={exp._id}>
+                    <td style={{ fontSize: '0.875rem', color: 'var(--fg-2)', fontWeight: 500 }}>{exp.employeeId?.name || employees.find(e => e._id === (exp.employeeId?._id || exp.employeeId))?.name || '—'}</td>
+                    <td style={{ fontSize: '0.875rem', color: 'var(--fg-3)' }}>{exp.description || '—'}</td>
+                    <td style={{ fontWeight: 700, color: '#4f6831' }}>{cur} {(exp.amount || 0).toLocaleString()}</td>
+                    <td style={{ fontSize: '0.82rem', color: 'var(--fg-4)' }}>{exp.date ? new Date(exp.date).toLocaleDateString() : '—'}</td>
                   </tr>
                 ))}
                 {expenses.length === 0 && (

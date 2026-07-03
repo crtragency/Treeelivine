@@ -89,11 +89,11 @@ export default function FinancialPage() {
   const filtered = filterCat ? expenses.filter(e => e.category === filterCat) : expenses
 
   return (
-    <div style={{ padding: '1.75rem 2rem', flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+    <div className="page-content">
+      <div className="page-head">
         <div>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--fg-1)' }}>{t.financialTitle}</h1>
-          <p style={{ fontSize: '0.8rem', color: 'var(--fg-4)', marginTop: 2 }}>{t.financialSubtitle}</p>
+          <h1>{t.financialTitle}</h1>
+          <p className="sub">{t.financialSubtitle}</p>
         </div>
         {hasPermission('finance.write') && (
           <button className="btn btn-primary" onClick={openCreate} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -125,7 +125,7 @@ export default function FinancialPage() {
                     return (
                       <div key={cat}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                          <span style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--fg-2)', textTransform: 'capitalize' }}>{cat}</span>
+                          <span style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--fg-2)', }}>{t[`status.${cat}`] || cat}</span>
                           <span style={{ fontSize: '0.82rem', color: 'var(--fg-3)', fontWeight: 600 }}>{cur} {total.toLocaleString()} <span style={{ fontSize: '0.72rem', color: 'var(--fg-4)' }}>({pct.toFixed(0)}%)</span></span>
                         </div>
                         <div style={{ height: 6, background: 'var(--surface2)', borderRadius: 3 }}>
@@ -147,7 +147,7 @@ export default function FinancialPage() {
                 { label: t.totalExpenseItems,   value: String(expenses.length),                                            color: 'var(--fg-1)' },
                 { label: t.salaryExpenses,      value: `${cur} ${expenses.filter(e=>e.category==='salary').reduce((s,e)=>s+(e.amount||0),0).toLocaleString()}`, color: '#7c3aed' },
               ].map(s => (
-                <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.8rem', color: 'var(--fg-3)' }}>{s.label}</span>
                   <span style={{ fontSize: '1rem', fontWeight: 700, color: s.color }}>{s.value}</span>
                 </div>
@@ -156,32 +156,30 @@ export default function FinancialPage() {
           </div>
 
           {/* Expenses table */}
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+          <div className="card-surface table-scroll" style={{ overflow: "hidden auto" }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)' }}>
               <h3 style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--fg-1)' }}>{t.expenseLog}</h3>
               <select className="input" value={filterCat} onChange={e => setFilterCat(e.target.value)} style={{ width: 160, fontSize: '0.8rem' }}>
                 <option value="">{t.allCategories}</option>
-                {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+                {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{t[`status.${c}`] || c}</option>)}
               </select>
             </div>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table className="t-table">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
+                <tr>
                   {[t.description, t.category, t.amount, t.date, t.actions].map(h => (
-                    <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'start', fontSize: '0.75rem', color: 'var(--fg-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+                    <th key={h}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {filtered.map(exp => (
-                  <tr key={exp._id} style={{ borderBottom: '1px solid var(--border)' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = '')}>
-                    <td style={{ padding: '0.875rem 1rem', fontSize: '0.875rem', color: 'var(--fg-2)' }}>{exp.description || '—'}</td>
-                    <td style={{ padding: '0.875rem 1rem' }}><StatusBadge status={exp.category} /></td>
-                    <td style={{ padding: '0.875rem 1rem', fontWeight: 600, color: 'var(--fg-1)' }}>{cur} {(exp.amount || 0).toLocaleString()}</td>
-                    <td style={{ padding: '0.875rem 1rem', fontSize: '0.82rem', color: 'var(--fg-4)' }}>{exp.date ? new Date(exp.date).toLocaleDateString() : '—'}</td>
-                    <td style={{ padding: '0.875rem 1rem' }}>
+                  <tr key={exp._id}>
+                    <td style={{ fontSize: '0.875rem', color: 'var(--fg-2)' }}>{exp.description || '—'}</td>
+                    <td><StatusBadge status={exp.category} /></td>
+                    <td style={{ fontWeight: 600, color: 'var(--fg-1)' }}>{cur} {(exp.amount || 0).toLocaleString()}</td>
+                    <td style={{ fontSize: '0.82rem', color: 'var(--fg-4)' }}>{exp.date ? new Date(exp.date).toLocaleDateString() : '—'}</td>
+                    <td>
                       <div style={{ display: 'flex', gap: '0.4rem' }}>
                         {hasPermission('finance.write') && <button className="btn btn-secondary" onClick={() => openEdit(exp)} style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}>{t.edit}</button>}
                         {hasPermission('finance.write') && <button className="btn btn-danger" onClick={() => setDeleteTarget(exp)} style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}>{t.delete}</button>}
@@ -210,7 +208,7 @@ export default function FinancialPage() {
           <div>
             <label className="label">{t.category} *</label>
             <select className="input" value={form.category || 'other'} onChange={e => setForm((p: any) => ({ ...p, category: e.target.value }))}>
-              {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+              {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{t[`status.${c}`] || c}</option>)}
             </select>
           </div>
           <div>

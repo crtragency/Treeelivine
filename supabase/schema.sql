@@ -265,11 +265,11 @@ INSERT INTO settings (
   company_name, default_currency, default_tax_rate,
   currencies, roles, permissions
 )
-VALUES (
+SELECT
   'Treelivine',
   'SAR',
   15,
-  '[{"code":"SAR","name":"Saudi Riyal","rate":1},{"code":"USD","name":"US Dollar","rate":3.75},{"code":"EUR","name":"Euro","rate":4.05}]',
+  '[{"code":"SAR","name":"Saudi Riyal","rate":1},{"code":"USD","name":"US Dollar","rate":3.75},{"code":"EUR","name":"Euro","rate":4.05}]'::jsonb,
   '[
     {"role":"admin","label":"Admin","permissions":["crm.read","crm.write","projects.read","projects.write","tasks.read","tasks.write","finance.read","finance.write","team.read","team.write","settings.read","settings.write","templates.read","templates.write"]},
     {"role":"manager","label":"Manager","permissions":["crm.read","crm.write","projects.read","projects.write","tasks.read","tasks.write","team.read","templates.read"]},
@@ -277,7 +277,7 @@ VALUES (
     {"role":"finance","label":"Finance","permissions":["finance.read","finance.write","projects.read","tasks.read"]},
     {"role":"viewer","label":"Viewer","permissions":["crm.read","projects.read","tasks.read"]},
     {"role":"client","label":"Client","permissions":[]}
-  ]',
+  ]'::jsonb,
   '[
     {"key":"crm.read","label":"CRM Read"},{"key":"crm.write","label":"CRM Write"},
     {"key":"projects.read","label":"Projects Read"},{"key":"projects.write","label":"Projects Write"},
@@ -286,9 +286,8 @@ VALUES (
     {"key":"team.read","label":"Team Read"},{"key":"team.write","label":"Team Write"},
     {"key":"settings.read","label":"Settings Read"},{"key":"settings.write","label":"Settings Write"},
     {"key":"templates.read","label":"Templates Read"},{"key":"templates.write","label":"Templates Write"}
-  ]'
-)
-ON CONFLICT DO NOTHING;
+  ]'::jsonb
+WHERE NOT EXISTS (SELECT 1 FROM settings);
 
 -- ─────────────────────────────────────────
 -- DISABLE RLS (we use service role key with our own auth)

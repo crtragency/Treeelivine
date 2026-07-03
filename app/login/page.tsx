@@ -2,6 +2,7 @@
 import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/contexts/AppContext'
+import PasswordInput from '@/components/ui/PasswordInput'
 
 /* ── Brand logo ──────────────────────────────────────────────────────── */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -154,9 +155,7 @@ export default function LoginPage() {
                 {isAr ? 'نسيتها؟' : 'Forgot?'}
               </a>
             </div>
-            <input
-              className="input"
-              type="password"
+            <PasswordInput
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"

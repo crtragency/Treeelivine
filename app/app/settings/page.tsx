@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useApp } from '@/contexts/AppContext'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import PasswordInput from '@/components/ui/PasswordInput'
 
 type Tab = 'general' | 'permissions' | 'users' | 'currencies'
 
@@ -34,6 +35,7 @@ function UserModal({ user, onClose, onSave }: {
   onClose: () => void
   onSave: () => void
 }) {
+  const { t } = useApp()
   const isEdit = !!user
   const [form, setForm] = useState(isEdit
     ? { name: user.name || '', email: user.email || '', password: '', role: user.role || 'staff' }
@@ -44,9 +46,9 @@ function UserModal({ user, onClose, onSave }: {
 
   async function submit() {
     setErr('')
-    if (!form.name.trim()) { setErr('Name is required'); return }
-    if (!form.email.trim()) { setErr('Email is required'); return }
-    if (!isEdit && !form.password.trim()) { setErr('Password is required'); return }
+    if (!form.name.trim()) { setErr(t['settingsPage.nameRequired'] || 'Name is required'); return }
+    if (!form.email.trim()) { setErr(t['settingsPage.emailRequired'] || 'Email is required'); return }
+    if (!isEdit && !form.password.trim()) { setErr(t['settingsPage.passwordRequired'] || 'Password is required'); return }
 
     setSaving(true)
     const body: any = { name: form.name, email: form.email, role: form.role }
@@ -66,44 +68,44 @@ function UserModal({ user, onClose, onSave }: {
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={onClose}>
       <div style={{ background: 'var(--surface)', borderRadius: 16, padding: 28, width: '100%', maxWidth: 440, boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>{isEdit ? 'Edit User' : 'Add Team Member'}</h3>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>{isEdit ? (t['settingsPage.editUser'] || 'Edit User') : (t['settingsPage.addTeamMember'] || 'Add Team Member')}</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: 'var(--text-muted)', lineHeight: 1 }}>×</button>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <label className="label">Full Name</label>
+            <label className="label">{t['settingsPage.fullName'] || 'Full Name'}</label>
             <input className="input" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Ahmed Mohamed" />
           </div>
           <div>
-            <label className="label">Email Address</label>
+            <label className="label">{t['settingsPage.emailAddress'] || 'Email Address'}</label>
             <input className="input" type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="ahmed@company.com" disabled={isEdit} style={isEdit ? { opacity: 0.6 } : {}} />
           </div>
           <div>
-            <label className="label">{isEdit ? 'New Password (leave blank to keep)' : 'Password'}</label>
-            <input className="input" type="password" value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))} placeholder={isEdit ? '••••••••' : 'Min 6 characters'} />
+            <label className="label">{isEdit ? (t['settingsPage.newPassword'] || 'New Password (leave blank to keep)') : (t['settingsPage.password'] || 'Password')}</label>
+            <PasswordInput value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))} placeholder={isEdit ? '••••••••' : 'Min 6 characters'} />
           </div>
           <div>
-            <label className="label">Role</label>
+            <label className="label">{t['settingsPage.role'] || 'Role'}</label>
             <select className="input" value={form.role} onChange={e => setForm(p => ({ ...p, role: e.target.value }))}>
               {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 6 }}>
-              {form.role === 'admin' && 'Full access to everything'}
-              {form.role === 'manager' && 'Broad access: CRM, projects, tasks, team'}
-              {form.role === 'team' && 'Access to projects and tasks'}
-              {form.role === 'finance' && 'Access to finance, projects, and tasks'}
-              {form.role === 'viewer' && 'Read-only access to CRM, projects, tasks'}
-              {form.role === 'client' && 'Client portal access only'}
+              {form.role === 'admin' && (t['settingsPage.roleAdminDesc'] || 'Full access to everything')}
+              {form.role === 'manager' && (t['settingsPage.roleManagerDesc'] || 'Broad access: CRM, projects, tasks, team')}
+              {form.role === 'team' && (t['settingsPage.roleTeamDesc'] || 'Access to projects and tasks')}
+              {form.role === 'finance' && (t['settingsPage.roleFinanceDesc'] || 'Access to finance, projects, and tasks')}
+              {form.role === 'viewer' && (t['settingsPage.roleViewerDesc'] || 'Read-only access to CRM, projects, tasks')}
+              {form.role === 'client' && (t['settingsPage.roleClientDesc'] || 'Client portal access only')}
             </p>
           </div>
 
           {err && <p style={{ fontSize: '0.85rem', color: 'var(--danger)', background: 'var(--danger-soft,#fff5f5)', borderRadius: 8, padding: '8px 12px' }}>{err}</p>}
 
           <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-            <button className="btn btn-secondary" onClick={onClose} style={{ flex: 1 }}>Cancel</button>
+            <button className="btn btn-secondary" onClick={onClose} style={{ flex: 1 }}>{t.cancel || 'Cancel'}</button>
             <button className="btn btn-primary" onClick={submit} disabled={saving} style={{ flex: 2 }}>
-              {saving ? 'Saving...' : isEdit ? 'Save Changes' : 'Create User'}
+              {saving ? (t.saving || 'Saving…') : isEdit ? (t.saveChanges || 'Save Changes') : (t['settingsPage.createUser'] || 'Create User')}
             </button>
           </div>
         </div>
@@ -241,15 +243,15 @@ export default function SettingsPage() {
           {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div>
-              <p style={{ fontWeight: 600 }}>Team Members</p>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{users.length} user{users.length !== 1 ? 's' : ''}</p>
+              <p style={{ fontWeight: 600 }}>{t['settingsPage.teamMembers'] || 'Team Members'}</p>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{users.length} {t['settingsPage.usersCount'] || 'users'}</p>
             </div>
             {canWrite && (
               <button className="btn btn-primary" onClick={() => setUserModal({ open: true, user: null })} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
                   <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M8.5 11a4 4 0 100-8 4 4 0 000 8zM20 8v6M23 11h-6" />
                 </svg>
-                Add User
+                {t['settingsPage.addUser'] || 'Add User'}
               </button>
             )}
           </div>
@@ -264,7 +266,7 @@ export default function SettingsPage() {
             <table className="t-table">
               <thead>
                 <tr>
-                  {['User', 'Role', 'Status', 'Actions'].map(h => (
+                  {[t['settingsPage.user'] || 'User', t['settingsPage.role'] || 'Role', t.status || 'Status', t.actions || 'Actions'].map(h => (
                     <th key={h}>{h}</th>
                   ))}
                 </tr>
@@ -287,7 +289,7 @@ export default function SettingsPage() {
                     <td>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.82rem', fontWeight: 500, color: u.isActive ? '#38a169' : '#e53e3e' }}>
                         <span style={{ width: 7, height: 7, borderRadius: '50%', background: u.isActive ? '#38a169' : '#e53e3e', display: 'inline-block' }} />
-                        {u.isActive ? 'Active' : 'Inactive'}
+                        {u.isActive ? (t.active || 'Active') : (t.inactive || 'Inactive')}
                       </span>
                     </td>
                     <td>
@@ -295,14 +297,14 @@ export default function SettingsPage() {
                         {canWrite && (
                           <>
                             <button className="btn btn-secondary" onClick={() => setUserModal({ open: true, user: u })} style={{ padding: '0.3rem 0.7rem', fontSize: '0.78rem' }}>
-                              Edit
+                              {t.edit || 'Edit'}
                             </button>
                             <button className="btn btn-secondary" onClick={() => toggleActive(u)} style={{ padding: '0.3rem 0.7rem', fontSize: '0.78rem' }}>
-                              {u.isActive ? 'Deactivate' : 'Activate'}
+                              {u.isActive ? (t['settingsPage.deactivate'] || 'Deactivate') : (t['settingsPage.activate'] || 'Activate')}
                             </button>
                             {u.role !== 'admin' && (
                               <button className="btn btn-danger" onClick={() => setDeleteConfirm(u._id)} style={{ padding: '0.3rem 0.7rem', fontSize: '0.78rem' }}>
-                                Delete
+                                {t.delete || 'Delete'}
                               </button>
                             )}
                           </>
@@ -312,7 +314,7 @@ export default function SettingsPage() {
                   </tr>
                 ))}
                 {users.length === 0 && (
-                  <tr><td colSpan={4} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>No users yet. Add your first team member.</td></tr>
+                  <tr><td colSpan={4} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t['settingsPage.noUsers'] || 'No users yet. Add your first team member.'}</td></tr>
                 )}
               </tbody>
             </table>
@@ -380,7 +382,7 @@ export default function SettingsPage() {
             <h3 style={{ fontWeight: 700, marginBottom: 8 }}>Delete User?</h3>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: 20 }}>This action cannot be undone. The user will lose all access.</p>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn btn-secondary" onClick={() => setDeleteConfirm(null)} style={{ flex: 1 }}>Cancel</button>
+              <button className="btn btn-secondary" onClick={() => setDeleteConfirm(null)} style={{ flex: 1 }}>{t.cancel || 'Cancel'}</button>
               <button className="btn btn-danger" onClick={() => deleteUser(deleteConfirm)} style={{ flex: 1 }}>Delete</button>
             </div>
           </div>

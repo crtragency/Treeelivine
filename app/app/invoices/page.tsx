@@ -98,8 +98,8 @@ export default function InvoicesPage() {
   }
 
   const filtered = filterStatus ? invoices.filter(i => i.status === filterStatus) : invoices
-  const totalRev  = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + (i.amountBase || 0), 0)
-  const totalUnpaid = invoices.filter(i => ['unpaid', 'partial', 'overdue'].includes(i.status)).reduce((s, i) => s + (i.amountBase || 0), 0)
+  const totalRev  = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + (i.amount ?? i.amountBase ?? 0), 0)
+  const totalUnpaid = invoices.filter(i => ['unpaid', 'partial', 'overdue'].includes(i.status)).reduce((s, i) => s + (i.amount ?? i.amountBase ?? 0), 0)
   const { subtotal: modalSubtotal } = calcTotals(items, Number(form.taxRate || 0))
 
   return (
@@ -154,8 +154,8 @@ export default function InvoicesPage() {
                   onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
                   onMouseLeave={e => (e.currentTarget.style.background = '')}>
                   <td style={{ padding: '0.875rem 1rem', fontWeight: 600, fontSize: '0.875rem', color: 'var(--accent)' }}>{inv.invoiceNumber}</td>
-                  <td style={{ padding: '0.875rem 1rem', fontSize: '0.875rem', color: 'var(--fg-2)' }}>{inv.customerId?.name || inv.customerName || '—'}</td>
-                  <td style={{ padding: '0.875rem 1rem', fontWeight: 600, color: 'var(--fg-1)' }}>{inv.currency || cur} {(inv.amountBase || 0).toLocaleString()}</td>
+                  <td style={{ padding: '0.875rem 1rem', fontSize: '0.875rem', color: 'var(--fg-2)' }}>{inv.customer?.name || inv.customerId?.name || inv.customerName || '—'}</td>
+                  <td style={{ padding: '0.875rem 1rem', fontWeight: 600, color: 'var(--fg-1)' }}>{inv.currency || cur} {(inv.amount ?? inv.amountBase ?? 0).toLocaleString()}</td>
                   <td style={{ padding: '0.875rem 1rem', fontSize: '0.875rem', color: '#059669', fontWeight: 500 }}>{inv.currency || cur} {(inv.paidAmount || 0).toLocaleString()}</td>
                   <td style={{ padding: '0.875rem 1rem' }}><StatusBadge status={inv.status} /></td>
                   <td style={{ padding: '0.875rem 1rem', fontSize: '0.82rem', color: 'var(--fg-4)' }}>{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}</td>

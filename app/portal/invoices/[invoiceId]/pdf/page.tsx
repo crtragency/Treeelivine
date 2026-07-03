@@ -21,8 +21,8 @@ export default function PortalInvoicePDFPage() {
   if (loading) return <LoadingSpinner />
   if (!invoice) return <p style={{ padding: '2rem', color: 'var(--text-muted)' }}>Invoice not found</p>
 
-  const customer = invoice.customerId
-  const subtotal = (invoice.items || []).reduce((s: number, i: any) => s + (i.quantity || 1) * (i.unitPrice || 0), 0)
+  const customer = invoice.customer || invoice.customerId
+  const subtotal = (invoice.items || []).reduce((s: number, i: any) => s + Number(i.qty ?? i.quantity ?? 1) * Number(i.price ?? i.unitPrice ?? 0), 0)
 
   return (
     <div>
@@ -69,9 +69,9 @@ export default function PortalInvoicePDFPage() {
             {(invoice.items || []).map((item: any, i: number) => (
               <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '0.75rem 1rem' }}>{item.description}</td>
-                <td style={{ padding: '0.75rem 1rem', textAlign: 'end' }}>{item.quantity || 1}</td>
-                <td style={{ padding: '0.75rem 1rem', textAlign: 'end' }}>{invoice.currency} {(item.unitPrice || 0).toLocaleString()}</td>
-                <td style={{ padding: '0.75rem 1rem', textAlign: 'end', fontWeight: 500 }}>{invoice.currency} {((item.quantity || 1) * (item.unitPrice || 0)).toLocaleString()}</td>
+                <td style={{ padding: '0.75rem 1rem', textAlign: 'end' }}>{item.qty ?? item.quantity ?? 1}</td>
+                <td style={{ padding: '0.75rem 1rem', textAlign: 'end' }}>{invoice.currency} {Number(item.price ?? item.unitPrice ?? 0).toLocaleString()}</td>
+                <td style={{ padding: '0.75rem 1rem', textAlign: 'end', fontWeight: 500 }}>{invoice.currency} {(Number(item.qty ?? item.quantity ?? 1) * Number(item.price ?? item.unitPrice ?? 0)).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
@@ -85,7 +85,7 @@ export default function PortalInvoicePDFPage() {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.6rem 0' }}>
               <span style={{ fontWeight: 700 }}>Total</span>
-              <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)' }}>{invoice.currency} {(invoice.amountBase || subtotal).toLocaleString()}</span>
+              <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)' }}>{invoice.currency} {(invoice.amount || subtotal).toLocaleString()}</span>
             </div>
           </div>
         </div>

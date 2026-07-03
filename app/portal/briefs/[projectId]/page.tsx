@@ -49,10 +49,12 @@ export default function PortalBriefPage() {
       <div className="card" style={{ marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h3 style={{ fontWeight: 600 }}>Project Brief</h3>
-          {project?.briefStatus === 'pending' && (
+          {project?.brief && project?.briefStatus !== 'approved' && (
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button className="btn btn-primary" onClick={() => handleAction('approve')} disabled={approving} style={{ fontSize: '0.85rem' }}>✓ Approve</button>
-              <button className="btn btn-danger" onClick={() => handleAction('reject')} disabled={approving} style={{ fontSize: '0.85rem' }}>✗ Request Changes</button>
+              {project?.briefStatus !== 'rejected' && (
+                <button className="btn btn-danger" onClick={() => handleAction('reject')} disabled={approving} style={{ fontSize: '0.85rem' }}>✗ Request Changes</button>
+              )}
             </div>
           )}
         </div>

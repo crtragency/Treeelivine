@@ -92,8 +92,8 @@ export default function FinancePage() {
               {invoices.map(inv => (
                 <tr key={inv._id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '0.75rem 1rem', fontWeight: 500 }}>{inv.invoiceNumber}</td>
-                  <td style={{ padding: '0.75rem 1rem' }}>{inv.customerId?.name || '-'}</td>
-                  <td style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>{inv.currency} {(inv.amountBase || 0).toLocaleString()}</td>
+                  <td style={{ padding: '0.75rem 1rem' }}>{inv.customer?.name || inv.customerId?.name || '-'}</td>
+                  <td style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>{inv.currency} {(inv.amount ?? inv.amountBase ?? 0).toLocaleString()}</td>
                   <td style={{ padding: '0.75rem 1rem' }}><StatusBadge status={inv.status} /></td>
                   <td style={{ padding: '0.75rem 1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '-'}</td>
                   <td style={{ padding: '0.75rem 1rem' }}>

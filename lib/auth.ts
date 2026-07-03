@@ -21,6 +21,11 @@ export function getPermissionsForRole(role: string, settings: any): string[] {
 
 export function getEffectivePermissions(user: any, settings: any): string[] {
   let perms = getPermissionsForRole(user.role, settings)
+  // Per-user extra permissions granted from Settings → Permissions
+  const userPerms: string[] = user.effective_permissions || user.effectivePermissions || []
+  if (userPerms.length) {
+    perms = perms.concat(userPerms).filter((v, i, a) => a.indexOf(v) === i)
+  }
   const override = (settings?.userPermissionOverrides || []).find(
     (o: any) => o.userId === user.id
   )

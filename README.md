@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Treeelivine ERP
 
-## Getting Started
+Internal agency ERP (CRM, projects, tasks, briefs, invoices, quotations, HR/payroll, support tickets, client portal) built with Next.js 14 + Supabase.
 
-First, run the development server:
+## Setup (one command)
+
+You need a [Supabase](https://supabase.com/dashboard) project and a personal access token (Dashboard → Account → Access Tokens).
 
 ```bash
+npm install
+SUPABASE_ACCESS_TOKEN=sbp_xxx npm run setup:supabase
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The setup script:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Finds your Supabase project (pass `-- --ref <project-ref>` if you have several)
+2. Applies `supabase/schema.sql` (idempotent — safe to re-run)
+3. Fetches the project URL and API keys
+4. Writes `.env.local` with everything the app needs, including a generated `JWT_SECRET`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Then open [http://localhost:3000](http://localhost:3000) and click **🚀 جرّب الديمو / Try Demo** — it seeds demo data and signs you in as a read-only demo admin.
 
-## Learn More
+> ⚠️ Rotate your `sbp_` token after setup — it grants full access to your Supabase account.
 
-To learn more about Next.js, take a look at the following resources:
+### Manual setup (alternative)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Run `supabase/schema.sql` in the Supabase SQL Editor
+2. Copy `.env.example` to `.env.local` and fill in:
+   - `NEXT_PUBLIC_SUPABASE_URL` — Project Settings → API → Project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` — Project Settings → API → Project API keys
+   - `JWT_SECRET` — any long random string
+   - `DEMO_MODE=true`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploying (Vercel)
 
-## Deploy on Vercel
+Set the same five environment variables in Vercel → Project → Settings → Environment Variables, then deploy. The demo button works in production once the schema is applied and the env vars are set.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Demo mode
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The **Try Demo** button calls `POST /api/seed`, which wipes rows flagged `is_demo` and re-creates demo employees, customers, projects, tasks, invoices, expenses, quotations, tickets and templates, then signs you in as `demo@treeelivine.com` (admin, read-only — writes are blocked for demo users).

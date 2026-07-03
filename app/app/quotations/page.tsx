@@ -102,11 +102,11 @@ export default function QuotationsPage() {
   }
 
   return (
-    <div style={{ padding: '1.75rem 2rem', flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+    <div className="page-content">
+      <div className="page-head">
         <div>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--fg-1)' }}>{t.quotations || 'Quotations'}</h1>
-          <p style={{ fontSize: '0.8rem', color: 'var(--fg-4)', marginTop: 2 }}>{t.subtitle || 'Create and track client quotations'}</p>
+          <h1>{t['quotations.title'] || 'Quotations'}</h1>
+          <p className="sub">{t['quotations.subtitle'] || 'Create and track client quotations'}</p>
         </div>
         {hasPermission('finance.write') && (
           <button className="btn btn-primary" onClick={openCreate} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -116,7 +116,7 @@ export default function QuotationsPage() {
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0.875rem', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
         {[
           { label: t.totalQuotes,    value: String(quotes.length),                       color: 'var(--fg-1)' },
           { label: t.draft,          value: String(counts.draft),                         color: '#6b7280' },
@@ -132,49 +132,42 @@ export default function QuotationsPage() {
       </div>
 
       {/* Filter tabs */}
-      <div style={{ display: 'flex', gap: '0.3rem', background: 'var(--surface2)', borderRadius: 8, padding: '0.25rem', marginBottom: '1rem', width: 'fit-content' }}>
+      <div className="seg">
         {['', ...QUOTE_STATUSES].map(s => (
-          <button key={s} onClick={() => setFilterStatus(s)} style={{
-            padding: '0.3rem 0.75rem', fontSize: '0.78rem', fontWeight: 500, border: 'none', cursor: 'pointer',
-            borderRadius: 6, background: filterStatus === s ? 'var(--surface)' : 'transparent',
-            color: filterStatus === s ? 'var(--fg-1)' : 'var(--fg-4)',
-            boxShadow: filterStatus === s ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-          }}>
-            {s ? s.charAt(0).toUpperCase() + s.slice(1) : (t.all || 'All')}
+          <button key={s} className={filterStatus === s ? 'on' : ''} onClick={() => setFilterStatus(s)}>
+            {s ? (t[`status.${s}`] || s) : (t.all || 'All')}
           </button>
         ))}
       </div>
 
       {loading ? <LoadingSpinner /> : (
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div className="card-surface table-scroll" style={{ overflow: "hidden auto" }}>
+          <table className="t-table">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
+              <tr>
                 {[t.quoteNumber, t.client, t.amount, t.taxCol, t.total, t.status, t.validUntil, t.actions].map(h => (
-                  <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'start', fontSize: '0.75rem', color: 'var(--fg-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+                  <th key={h}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {quotes.map(q => (
-                <tr key={q._id} style={{ borderBottom: '1px solid var(--border)' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = '')}>
-                  <td style={{ padding: '0.875rem 1rem', fontWeight: 600, color: 'var(--accent)', fontSize: '0.875rem' }}>{q.quoteNumber}</td>
-                  <td style={{ padding: '0.875rem 1rem' }}>
+                <tr key={q._id}>
+                  <td style={{ fontWeight: 600, color: 'var(--accent)', fontSize: '0.875rem' }}>{q.quoteNumber}</td>
+                  <td>
                     <p style={{ fontWeight: 500, fontSize: '0.875rem', color: 'var(--fg-1)' }}>{q.customer?.name || '—'}</p>
                     {q.project && <p style={{ fontSize: '0.72rem', color: 'var(--fg-4)' }}>{q.project?.name}</p>}
                   </td>
-                  <td style={{ padding: '0.875rem 1rem', fontSize: '0.875rem', color: 'var(--fg-3)' }}>{q.currency} {(q.subtotal || 0).toLocaleString()}</td>
-                  <td style={{ padding: '0.875rem 1rem', fontSize: '0.875rem', color: 'var(--fg-4)' }}>{(q.taxRate || 0)}%</td>
-                  <td style={{ padding: '0.875rem 1rem', fontWeight: 700, color: 'var(--fg-1)' }}>{q.currency} {(q.total || 0).toLocaleString()}</td>
-                  <td style={{ padding: '0.875rem 1rem' }}>
+                  <td style={{ fontSize: '0.875rem', color: 'var(--fg-3)' }}>{q.currency} {(q.subtotal || 0).toLocaleString()}</td>
+                  <td style={{ fontSize: '0.875rem', color: 'var(--fg-4)' }}>{(q.taxRate || 0)}%</td>
+                  <td style={{ fontWeight: 700, color: 'var(--fg-1)' }}>{q.currency} {(q.total || 0).toLocaleString()}</td>
+                  <td>
                     <span style={{ fontSize: '0.75rem', fontWeight: 600, color: statusColor[q.status] || 'var(--fg-4)', background: (statusColor[q.status] || '#6b7280') + '15', padding: '0.2rem 0.65rem', borderRadius: 20 }}>
-                      {(q.status || 'draft').charAt(0).toUpperCase() + (q.status || '').slice(1)}
+                      {t[`status.${q.status || 'draft'}`] || q.status || 'draft'}
                     </span>
                   </td>
-                  <td style={{ padding: '0.875rem 1rem', fontSize: '0.82rem', color: 'var(--fg-4)' }}>{q.validUntil ? new Date(q.validUntil).toLocaleDateString() : '—'}</td>
-                  <td style={{ padding: '0.875rem 1rem' }}>
+                  <td style={{ fontSize: '0.82rem', color: 'var(--fg-4)' }}>{q.validUntil ? new Date(q.validUntil).toLocaleDateString() : '—'}</td>
+                  <td>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
                       {hasPermission('finance.write') && <button className="btn btn-secondary" onClick={() => openEdit(q)} style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}>{t.edit || 'Edit'}</button>}
                       {hasPermission('finance.write') && <button className="btn btn-danger" onClick={() => setDeleteTarget(q)} style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}>{t.delete || 'Delete'}</button>}
@@ -215,7 +208,7 @@ export default function QuotationsPage() {
             <div>
               <label className="label">{t.status || 'Status'}</label>
               <select className="input" value={form.status || 'draft'} onChange={e => setForm((p: any) => ({ ...p, status: e.target.value }))}>
-                {QUOTE_STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                {QUOTE_STATUSES.map(s => <option key={s} value={s}>{t[`status.${s}`] || s}</option>)}
               </select>
             </div>
             <div><label className="label">{t.taxRate || 'Tax Rate %'}</label><input className="input" type="number" value={form.taxRate ?? 15} onChange={e => setForm((p: any) => ({ ...p, taxRate: Number(e.target.value) }))} /></div>

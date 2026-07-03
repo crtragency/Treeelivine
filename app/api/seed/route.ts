@@ -42,20 +42,22 @@ export async function POST(_req: NextRequest) {
 
     // Create demo projects
     if (customers?.length && employees?.length) {
+      const inDays = (n: number) => new Date(Date.now() + n * 86400000).toISOString()
       const projInserts = [
-        { name: 'حملة التواصل الاجتماعي', customer_id: customers[0].id, status: 'active', assigned_employee_ids: [employees[0].id, employees[1].id], is_demo: true },
-        { name: 'هوية الريادة البصرية', customer_id: customers[1].id, status: 'active', assigned_employee_ids: [employees[1].id], is_demo: true },
-        { name: 'استراتيجية المستقبل 2025', customer_id: customers[2].id, status: 'planning', assigned_employee_ids: [employees[3].id], is_demo: true },
+        { name: 'حملة التواصل الاجتماعي', customer_id: customers[0].id, status: 'active', assigned_employee_ids: [employees[0].id, employees[1].id], task_progress_percent: 65, due_date: inDays(12), is_demo: true },
+        { name: 'هوية الريادة البصرية', customer_id: customers[1].id, status: 'active', assigned_employee_ids: [employees[1].id], task_progress_percent: 38, due_date: inDays(-3), is_demo: true },
+        { name: 'استراتيجية المستقبل 2025', customer_id: customers[2].id, status: 'planning', assigned_employee_ids: [employees[3].id], task_progress_percent: 10, due_date: inDays(30), is_demo: true },
       ]
       const { data: projects } = await supabase.from('projects').insert(projInserts).select()
 
       // Create demo tasks
       if (projects?.length) {
         await supabase.from('tasks').insert([
-          { title: 'تصميم بوست إنستغرام', project_id: projects[0].id, current_assignee_id: employees[1].id, status: 'in_progress', priority: 'high', is_demo: true },
-          { title: 'كتابة كابشن الأسبوع', project_id: projects[0].id, current_assignee_id: employees[2].id, status: 'pending', priority: 'medium', is_demo: true },
-          { title: 'تصميم الشعار', project_id: projects[1].id, current_assignee_id: employees[1].id, status: 'in_review', priority: 'high', is_demo: true },
-          { title: 'اجتماع استراتيجي', project_id: projects[2].id, current_assignee_id: employees[3].id, status: 'pending', priority: 'medium', is_demo: true },
+          { title: 'تصميم بوست إنستغرام', project_id: projects[0].id, current_assignee_id: employees[1].id, status: 'in_progress', priority: 'high', due_date: inDays(2), is_demo: true },
+          { title: 'كتابة كابشن الأسبوع', project_id: projects[0].id, current_assignee_id: employees[2].id, status: 'pending', priority: 'medium', due_date: inDays(5), is_demo: true },
+          { title: 'تصميم الشعار', project_id: projects[1].id, current_assignee_id: employees[1].id, status: 'in_review', priority: 'high', due_date: inDays(-2), is_demo: true },
+          { title: 'مراجعة دليل الهوية', project_id: projects[1].id, current_assignee_id: employees[3].id, status: 'pending', priority: 'urgent', due_date: inDays(-1), is_demo: true },
+          { title: 'اجتماع استراتيجي', project_id: projects[2].id, current_assignee_id: employees[3].id, status: 'pending', priority: 'medium', due_date: inDays(7), is_demo: true },
         ])
       }
 

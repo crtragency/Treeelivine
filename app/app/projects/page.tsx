@@ -61,13 +61,13 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div style={{ padding: '1.5rem', flex: 1 }}>
+    <div className="page-content">
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, flex: 1 }}>{t['projects.title'] || t.projects}</h2>
+        <h2 style={{ fontSize: 'var(--fs-2xl)', fontWeight: 600, color: 'var(--fg-1)', letterSpacing: '-0.01em', flex: 1 }}>{t['projects.title'] || 'Projects'}</h2>
         <input className="input" placeholder={t.search} value={search} onChange={e => setSearch(e.target.value)} style={{ width: 200 }} />
         <select className="input" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ width: 160 }}>
           <option value="">{t.allStatuses}</option>
-          {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+          {STATUSES.map(s => <option key={s} value={s}>{t[`status.${s}`] || s}</option>)}
         </select>
         {hasPermission('projects.write') && <button className="btn btn-primary" onClick={openCreate}>+ {t.addProject}</button>}
       </div>
@@ -109,7 +109,7 @@ export default function ProjectsPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div><label className="label">{t.status}</label>
               <select className="input" value={form.status || 'planning'} onChange={e => setForm((p: any) => ({ ...p, status: e.target.value }))}>
-                {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                {STATUSES.map(s => <option key={s} value={s}>{t[`status.${s}`] || s}</option>)}
               </select>
             </div>
             <div><label className="label">{t.dueDate}</label><input className="input" type="date" value={form.dueDate ? form.dueDate.substring(0, 10) : ''} onChange={e => setForm((p: any) => ({ ...p, dueDate: e.target.value }))} /></div>

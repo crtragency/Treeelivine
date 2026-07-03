@@ -22,18 +22,15 @@ const Icons = {
   Arrow:    () => <IC d="M5 12h14M12 5l7 7-7 7" size={16} />,
 }
 
-function KpiTile({ title, value, sub, icon, bg }: { title: string; value: string | number; sub?: string; icon: React.ReactNode; bg: string }) {
+function KpiTile({ title, value, sub, icon }: { title: string; value: string | number; sub?: string; icon: React.ReactNode; bg?: string }) {
   return (
-    <div style={{ background: bg, borderRadius: 14, padding: '1.25rem 1.5rem', color: '#fff', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: -8, right: -8, opacity: 0.12, transform: 'scale(2.8)' }}>{icon}</div>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-        <span style={{ fontSize: '0.72rem', fontWeight: 600, opacity: 0.85, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{title}</span>
-        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          {icon}
-        </div>
+    <div className="kpi" style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <span className="kpi-label" style={{ marginBottom: 0 }}>{title}</span>
+        <span style={{ color: 'var(--fg-4)', display: 'inline-flex', flexShrink: 0 }}>{icon}</span>
       </div>
-      <p style={{ fontSize: '1.9rem', fontWeight: 800, lineHeight: 1, marginBottom: sub ? '0.3rem' : 0 }}>{value}</p>
-      {sub && <p style={{ fontSize: '0.78rem', opacity: 0.8, marginTop: '0.3rem' }}>{sub}</p>}
+      <span className="kpi-value ltr-num">{value}</span>
+      {sub && <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-4)' }}>{sub}</span>}
     </div>
   )
 }
@@ -48,7 +45,8 @@ function FinCard({ label, value, color, cur }: { label: string; value: number; c
 }
 
 export default function PortalDashboard() {
-  const { t, settings } = useApp()
+  const { t, settings, lang } = useApp()
+  const isAr = lang === 'ar'
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -86,7 +84,7 @@ export default function PortalDashboard() {
 
       {/* Company Banner */}
       <div style={{
-        background: 'linear-gradient(135deg, #3d5226 0%, #4f6831 50%, #6b8a45 100%)',
+        background: 'var(--brand-olive-600)',
         borderRadius: 16, padding: '1.75rem 2rem', marginBottom: '1.5rem', color: '#fff',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
@@ -105,7 +103,7 @@ export default function PortalDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'rgba(255,255,255,0.12)', borderRadius: 10, padding: '0.65rem 0.875rem' }}>
               <Icons.Mail />
               <div>
-                <p style={{ fontSize: '0.65rem', opacity: 0.7, marginBottom: 1 }}>Email</p>
+                <p style={{ fontSize: '0.65rem', opacity: 0.7, marginBottom: 1 }}>{isAr ? 'البريد' : 'Email'}</p>
                 <p style={{ fontSize: '0.82rem', fontWeight: 600 }}>{c.email}</p>
               </div>
             </div>
@@ -114,7 +112,7 @@ export default function PortalDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'rgba(255,255,255,0.12)', borderRadius: 10, padding: '0.65rem 0.875rem' }}>
               <Icons.Building />
               <div>
-                <p style={{ fontSize: '0.65rem', opacity: 0.7, marginBottom: 1 }}>Company</p>
+                <p style={{ fontSize: '0.65rem', opacity: 0.7, marginBottom: 1 }}>{isAr ? 'الشركة' : 'Company'}</p>
                 <p style={{ fontSize: '0.82rem', fontWeight: 600 }}>{c.company}</p>
               </div>
             </div>
@@ -123,7 +121,7 @@ export default function PortalDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'rgba(255,255,255,0.12)', borderRadius: 10, padding: '0.65rem 0.875rem' }}>
               <Icons.Phone />
               <div>
-                <p style={{ fontSize: '0.65rem', opacity: 0.7, marginBottom: 1 }}>Phone</p>
+                <p style={{ fontSize: '0.65rem', opacity: 0.7, marginBottom: 1 }}>{isAr ? 'الهاتف' : 'Phone'}</p>
                 <p style={{ fontSize: '0.82rem', fontWeight: 600 }}>{c.phone}</p>
               </div>
             </div>
@@ -131,7 +129,7 @@ export default function PortalDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'rgba(255,255,255,0.12)', borderRadius: 10, padding: '0.65rem 0.875rem' }}>
             <Icons.Coins />
             <div>
-              <p style={{ fontSize: '0.65rem', opacity: 0.7, marginBottom: 1 }}>Currency</p>
+              <p style={{ fontSize: '0.65rem', opacity: 0.7, marginBottom: 1 }}>{isAr ? 'العملة' : 'Currency'}</p>
               <p style={{ fontSize: '0.82rem', fontWeight: 600 }}>{cur}</p>
             </div>
           </div>
@@ -140,21 +138,21 @@ export default function PortalDashboard() {
 
       {/* KPI Tiles */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-        <KpiTile title="Total Projects"   value={totalProjects}   sub={`${activeProjects} active`} icon={<Icons.Folder />}  bg="#2563eb" />
-        <KpiTile title="Active Projects"  value={activeProjects}                                    icon={<Icons.Active />}  bg="#7c3aed" />
-        <KpiTile title="Total Invoices"   value={totalInvoices}   sub={`${paidCount} paid`}         icon={<Icons.Invoice />} bg="#059669" />
-        <KpiTile title="Outstanding"      value={`${cur} ${unpaidAmt.toLocaleString()}`}            icon={<Icons.Money />}   bg="#d97706" />
+        <KpiTile title={isAr ? 'إجمالي المشاريع' : 'Total Projects'}   value={totalProjects}   sub={isAr ? `${activeProjects} نشطة` : `${activeProjects} active`} icon={<Icons.Folder />}  bg="#2563eb" />
+        <KpiTile title={isAr ? 'مشاريع نشطة' : 'Active Projects'}  value={activeProjects}                                    icon={<Icons.Active />}  bg="#7c3aed" />
+        <KpiTile title={isAr ? 'إجمالي الفواتير' : 'Total Invoices'}   value={totalInvoices}   sub={isAr ? `${paidCount} مدفوعة` : `${paidCount} paid`}         icon={<Icons.Invoice />} bg="#059669" />
+        <KpiTile title={isAr ? 'المستحق' : 'Outstanding'}      value={`${cur} ${unpaidAmt.toLocaleString()}`}            icon={<Icons.Money />}   bg="#d97706" />
       </div>
 
       {/* Financial Overview */}
       <div style={{ marginBottom: '1.5rem' }}>
         <h3 style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--fg-1)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-          Financial Overview
+          {isAr ? 'نظرة مالية' : 'Financial Overview'}
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '0.875rem' }}>
-          <FinCard label="Total Invoiced" value={paidAmt + unpaidAmt} color="#4f6831" cur={cur} />
-          <FinCard label="Total Paid"     value={paidAmt}             color="#059669" cur={cur} />
-          <FinCard label="Outstanding"    value={unpaidAmt}           color="#dc2626" cur={cur} />
+          <FinCard label={isAr ? 'إجمالي الفواتير' : 'Total Invoiced'} value={paidAmt + unpaidAmt} color="#4f6831" cur={cur} />
+          <FinCard label={isAr ? 'المدفوع' : 'Total Paid'}     value={paidAmt}             color="#059669" cur={cur} />
+          <FinCard label={isAr ? 'المستحق' : 'Outstanding'}    value={unpaidAmt}           color="#dc2626" cur={cur} />
         </div>
       </div>
 
@@ -164,16 +162,16 @@ export default function PortalDashboard() {
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
             <h3 style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--fg-1)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <span style={{ color: '#2563eb' }}><Icons.Folder /></span> Recent Projects
+              <span style={{ color: '#2563eb' }}><Icons.Folder /></span> {isAr ? 'أحدث المشاريع' : 'Recent Projects'}
             </h3>
             <Link href="/portal/projects" style={{ fontSize: '0.75rem', color: 'var(--accent)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 500 }}>
-              View all <Icons.Arrow />
+              {isAr ? 'عرض الكل' : 'View all'} <Icons.Arrow />
             </Link>
           </div>
           {(data.projects || []).length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--fg-4)' }}>
-              <p style={{ fontSize: '0.875rem', fontWeight: 500 }}>No projects yet</p>
-              <p style={{ fontSize: '0.78rem', marginTop: '0.25rem' }}>Projects will appear here once created by your account manager</p>
+              <p style={{ fontSize: '0.875rem', fontWeight: 500 }}>{isAr ? 'لا توجد مشاريع بعد' : 'No projects yet'}</p>
+              <p style={{ fontSize: '0.78rem', marginTop: '0.25rem' }}>{isAr ? 'ستظهر المشاريع هنا عند إنشائها من مدير حسابك' : 'Projects will appear here once created by your account manager'}</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -193,16 +191,16 @@ export default function PortalDashboard() {
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
             <h3 style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--fg-1)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <span style={{ color: '#059669' }}><Icons.Invoice /></span> Recent Invoices
+              <span style={{ color: '#059669' }}><Icons.Invoice /></span> {isAr ? 'أحدث الفواتير' : 'Recent Invoices'}
             </h3>
             <Link href="/portal/invoices" style={{ fontSize: '0.75rem', color: 'var(--accent)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 500 }}>
-              View all <Icons.Arrow />
+              {isAr ? 'عرض الكل' : 'View all'} <Icons.Arrow />
             </Link>
           </div>
           {(data.invoices || []).length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--fg-4)' }}>
-              <p style={{ fontSize: '0.875rem', fontWeight: 500 }}>No invoices yet</p>
-              <p style={{ fontSize: '0.78rem', marginTop: '0.25rem' }}>Invoices from your account manager will appear here</p>
+              <p style={{ fontSize: '0.875rem', fontWeight: 500 }}>{isAr ? 'لا توجد فواتير بعد' : 'No invoices yet'}</p>
+              <p style={{ fontSize: '0.78rem', marginTop: '0.25rem' }}>{isAr ? 'ستظهر الفواتير هنا عند إصدارها' : 'Invoices from your account manager will appear here'}</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

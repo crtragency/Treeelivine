@@ -72,42 +72,42 @@ export default function TasksPage() {
   }
 
   return (
-    <div style={{ padding: '1.5rem', flex: 1 }}>
+    <div className="page-content">
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, flex: 1 }}>{t['tasks.title'] || t.tasks}</h2>
+        <h2 style={{ fontSize: 'var(--fs-2xl)', fontWeight: 600, color: 'var(--fg-1)', letterSpacing: '-0.01em', flex: 1 }}>{t['tasks.title'] || t.tasks}</h2>
         <select className="input" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ width: 160 }}>
           <option value="">{t.allStatuses}</option>
-          {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+          {STATUSES.map(s => <option key={s} value={s}>{t[`status.${s}`] || s}</option>)}
         </select>
         {hasPermission('tasks.write') && <button className="btn btn-primary" onClick={openCreate}>+ {t.addTask}</button>}
       </div>
 
       {loading ? <LoadingSpinner /> : (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="t-table">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
+              <tr>
                 {[t.taskTitle, t.taskProject, t.taskAssignee, t.taskPriority, t.taskStatus, t.taskDue, t.taskActions].map(h => (
-                  <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'start', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{h}</th>
+                  <th key={h}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {tasks.map(task => (
-                <tr key={task._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '0.75rem 1rem', fontWeight: 500 }}>{task.title}</td>
-                  <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{task.project?.name || task.projectId?.name || '-'}</td>
-                  <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{task.assignee?.name || task.currentAssigneeId?.name || '-'}</td>
-                  <td style={{ padding: '0.75rem 1rem' }}><StatusBadge status={task.priority || 'medium'} /></td>
-                  <td style={{ padding: '0.75rem 1rem' }}>
+                <tr key={task._id}>
+                  <td style={{ fontWeight: 500 }}>{task.title}</td>
+                  <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{task.project?.name || task.projectId?.name || '-'}</td>
+                  <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{task.assignee?.name || task.currentAssigneeId?.name || '-'}</td>
+                  <td><StatusBadge status={task.priority || 'medium'} /></td>
+                  <td>
                     <select value={task.status} onChange={e => handleStatusChange(task._id, e.target.value)} style={{ fontSize: '0.8rem', background: 'transparent', border: 'none', color: 'var(--text)', cursor: 'pointer' }}>
-                      {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                      {STATUSES.map(s => <option key={s} value={s}>{t[`status.${s}`] || s}</option>)}
                     </select>
                   </td>
-                  <td style={{ padding: '0.75rem 1rem', fontSize: '0.8rem', color: task.dueDate && new Date(task.dueDate) < new Date() ? 'var(--danger)' : 'var(--text-muted)' }}>
+                  <td style={{ fontSize: '0.8rem', color: task.dueDate && new Date(task.dueDate) < new Date() ? 'var(--danger)' : 'var(--text-muted)' }}>
                     {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '-'}
                   </td>
-                  <td style={{ padding: '0.75rem 1rem' }}>
+                  <td>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
                       {hasPermission('tasks.write') && <button className="btn btn-secondary" onClick={() => openEdit(task)} style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>{t.edit}</button>}
                       {hasPermission('tasks.write') && <button className="btn btn-secondary" onClick={() => { setHandoverModal(task); setNewAssignee('') }} style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>{t.handover}</button>}
@@ -140,12 +140,12 @@ export default function TasksPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
             <div><label className="label">{t.status}</label>
               <select className="input" value={form.status || 'pending'} onChange={e => setForm((p: any) => ({ ...p, status: e.target.value }))}>
-                {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                {STATUSES.map(s => <option key={s} value={s}>{t[`status.${s}`] || s}</option>)}
               </select>
             </div>
             <div><label className="label">{t.priority}</label>
               <select className="input" value={form.priority || 'medium'} onChange={e => setForm((p: any) => ({ ...p, priority: e.target.value }))}>
-                {PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}
+                {PRIORITIES.map(p => <option key={p} value={p}>{t[`status.${p}`] || p}</option>)}
               </select>
             </div>
             <div><label className="label">{t.dueDate}</label><input className="input" type="date" value={form.dueDate ? form.dueDate.substring(0, 10) : ''} onChange={e => setForm((p: any) => ({ ...p, dueDate: e.target.value }))} /></div>

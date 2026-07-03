@@ -65,12 +65,12 @@ export default function FinancePage() {
   const EXPENSE_CATEGORIES = ['salary', 'rent', 'software', 'marketing', 'equipment', 'other']
 
   return (
-    <div style={{ padding: '1.5rem', flex: 1 }}>
+    <div className="page-content">
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, flex: 1 }}>{t.finance || 'Finance'}</h2>
-        <div style={{ display: 'flex', gap: '0.25rem', background: 'var(--surface2)', borderRadius: 8, padding: '0.25rem' }}>
+        <h2 style={{ fontSize: 'var(--fs-2xl)', fontWeight: 600, color: 'var(--fg-1)', letterSpacing: '-0.01em', flex: 1 }}>{t.finance || 'Finance'}</h2>
+        <div className="seg">
           {(['invoices', 'expenses'] as Tab[]).map(tb => (
-            <button key={tb} className="btn" onClick={() => setTab(tb)} style={{ padding: '0.35rem 0.75rem', fontSize: '0.85rem', background: tab === tb ? 'var(--accent)' : 'transparent', color: tab === tb ? '#fff' : 'var(--text)', border: 'none' }}>
+            <button key={tb} className={tab === tb ? 'on' : ''} onClick={() => setTab(tb)}>
               {(t as any)[tb] || tb}
             </button>
           ))}
@@ -80,23 +80,23 @@ export default function FinancePage() {
 
       {loading ? <LoadingSpinner /> : tab === 'invoices' ? (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="t-table">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
+              <tr>
                 {[t.invoiceNumber, t.customer, t.amount, t.status, t.dueDate, t.actions].map(h => (
-                  <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'start', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{h}</th>
+                  <th key={h}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {invoices.map(inv => (
-                <tr key={inv._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '0.75rem 1rem', fontWeight: 500 }}>{inv.invoiceNumber}</td>
-                  <td style={{ padding: '0.75rem 1rem' }}>{inv.customer?.name || inv.customerId?.name || '-'}</td>
-                  <td style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>{inv.currency} {(inv.amount ?? inv.amountBase ?? 0).toLocaleString()}</td>
-                  <td style={{ padding: '0.75rem 1rem' }}><StatusBadge status={inv.status} /></td>
-                  <td style={{ padding: '0.75rem 1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '-'}</td>
-                  <td style={{ padding: '0.75rem 1rem' }}>
+                <tr key={inv._id}>
+                  <td style={{ fontWeight: 500 }}>{inv.invoiceNumber}</td>
+                  <td>{inv.customer?.name || inv.customerId?.name || '-'}</td>
+                  <td style={{ fontWeight: 600 }}>{inv.currency} {(inv.amount ?? inv.amountBase ?? 0).toLocaleString()}</td>
+                  <td><StatusBadge status={inv.status} /></td>
+                  <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '-'}</td>
+                  <td>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
                       <Link href={`/app/finance/invoices/${inv._id}/pdf`} className="btn btn-secondary" style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>PDF</Link>
                       {hasPermission('finance.write') && <button className="btn btn-secondary" onClick={() => openEdit(inv)} style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>{t.edit}</button>}
@@ -111,22 +111,22 @@ export default function FinancePage() {
         </div>
       ) : (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="t-table">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
+              <tr>
                 {['Description', 'Category', 'Amount', 'Date', 'Actions'].map(h => (
-                  <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'start', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{h}</th>
+                  <th key={h}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {expenses.map(exp => (
-                <tr key={exp._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '0.75rem 1rem' }}>{exp.description || '-'}</td>
-                  <td style={{ padding: '0.75rem 1rem' }}><StatusBadge status={exp.category} /></td>
-                  <td style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>{cur} {(exp.amount || 0).toLocaleString()}</td>
-                  <td style={{ padding: '0.75rem 1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>{exp.date ? new Date(exp.date).toLocaleDateString() : '-'}</td>
-                  <td style={{ padding: '0.75rem 1rem' }}>
+                <tr key={exp._id}>
+                  <td>{exp.description || '-'}</td>
+                  <td><StatusBadge status={exp.category} /></td>
+                  <td style={{ fontWeight: 600 }}>{cur} {(exp.amount || 0).toLocaleString()}</td>
+                  <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{exp.date ? new Date(exp.date).toLocaleDateString() : '-'}</td>
+                  <td>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
                       {hasPermission('finance.write') && <button className="btn btn-secondary" onClick={() => openEdit(exp)} style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>Edit</button>}
                       {hasPermission('finance.write') && <button className="btn btn-danger" onClick={() => setDeleteTarget(exp)} style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>Del</button>}

@@ -7,21 +7,20 @@ interface Props {
   icon?: ReactNode
   color?: string
   sub?: string
+  delta?: string
+  deltaDir?: 'up' | 'down'
 }
 
-export default function KPICard({ title, value, icon, color = 'var(--accent)', sub }: Props) {
+export default function KPICard({ title, value, icon, sub, delta, deltaDir }: Props) {
   return (
-    <div className="card" style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-      {icon && (
-        <div style={{ width: 44, height: 44, borderRadius: 10, background: color + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', flexShrink: 0 }}>
-          {icon}
-        </div>
-      )}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>{title}</p>
-        <p style={{ fontSize: '1.5rem', fontWeight: 700, color }}>{value}</p>
-        {sub && <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>{sub}</p>}
+    <div className="kpi" style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <span className="kpi-label" style={{ marginBottom: 0 }}>{title}</span>
+        {icon && <span style={{ color: 'var(--fg-4)', flexShrink: 0, display: 'inline-flex' }}>{icon}</span>}
       </div>
+      <span className="kpi-value">{value}</span>
+      {delta && <span className={`kpi-delta ${deltaDir === 'down' ? 'kpi-delta-down' : 'kpi-delta-up'}`}>{delta}</span>}
+      {sub && <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-4)', marginTop: 2 }}>{sub}</span>}
     </div>
   )
 }

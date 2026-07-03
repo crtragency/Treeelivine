@@ -166,17 +166,23 @@ export default function SettingsPage() {
   if (loading) return <LoadingSpinner />
 
   const TABS: Tab[] = ['general', 'currencies', 'users', 'permissions']
+  const TAB_LABELS: Record<Tab, string> = {
+    general: t['settingsPage.general'] || 'General',
+    currencies: t['settingsPage.currencies'] || 'Currencies',
+    users: t['settingsPage.users'] || 'Users',
+    permissions: t['settingsPage.permissions'] || 'Permissions',
+  }
   const ALL_PERMISSIONS = ['crm.read', 'crm.write', 'projects.read', 'projects.write', 'tasks.read', 'tasks.write', 'team.read', 'team.write', 'finance.read', 'finance.write', 'templates.read', 'templates.write', 'settings.read', 'settings.write']
 
   const canWrite = hasPermission('settings.write')
 
   return (
-    <div style={{ padding: '1.5rem', flex: 1 }}>
-      <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>{t.settings || 'Settings'}</h2>
+    <div className="page-content">
+      <h2 style={{ fontSize: 'var(--fs-2xl)', fontWeight: 600, color: 'var(--fg-1)', letterSpacing: '-0.01em', marginBottom: '1.5rem' }}>{t.settings || 'Settings'}</h2>
 
-      <div style={{ display: 'flex', gap: '0.25rem', background: 'var(--surface2)', borderRadius: 8, padding: '0.25rem', marginBottom: '1.5rem', width: 'fit-content' }}>
+      <div className="seg" style={{ marginBottom: '1.5rem' }}>
         {TABS.map(tb => (
-          <button key={tb} className="btn" onClick={() => setTab(tb)} style={{ padding: '0.4rem 0.9rem', fontSize: '0.85rem', background: tab === tb ? 'var(--accent)' : 'transparent', color: tab === tb ? '#fff' : 'var(--text)', border: 'none' }}>
+          <button key={tb} className={tab === tb ? 'on' : ''} onClick={() => setTab(tb)}>
             {(t as any)[tb] || tb}
           </button>
         ))}
@@ -184,19 +190,19 @@ export default function SettingsPage() {
 
       {tab === 'general' && settings && (
         <div className="card" style={{ maxWidth: 560 }}>
-          <h3 style={{ fontWeight: 600, marginBottom: '1rem' }}>General Settings</h3>
+          <h3 style={{ fontWeight: 600, marginBottom: '1rem' }}>{t['settingsPage.generalSettings'] || 'General Settings'}</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div><label className="label">Company Name</label><input className="input" value={settings.companyName || ''} onChange={e => setLocalSettings((p: any) => ({ ...p, companyName: e.target.value }))} /></div>
-            <div><label className="label">Company Address</label><textarea className="input" value={settings.companyAddress || ''} onChange={e => setLocalSettings((p: any) => ({ ...p, companyAddress: e.target.value }))} rows={2} /></div>
-            <div><label className="label">Default Currency</label>
+            <div><label className="label">{t['settingsPage.companyName'] || 'Company Name'}</label><input className="input" value={settings.companyName || ''} onChange={e => setLocalSettings((p: any) => ({ ...p, companyName: e.target.value }))} /></div>
+            <div><label className="label">{t['settingsPage.companyAddress'] || 'Company Address'}</label><textarea className="input" value={settings.companyAddress || ''} onChange={e => setLocalSettings((p: any) => ({ ...p, companyAddress: e.target.value }))} rows={2} /></div>
+            <div><label className="label">{t['settingsPage.defaultCurrency'] || 'Default Currency'}</label>
               <input className="input" value={settings.defaultCurrency || ''} onChange={e => setLocalSettings((p: any) => ({ ...p, defaultCurrency: e.target.value }))} placeholder="SAR" />
             </div>
-            <div><label className="label">Tax Rate (%)</label><input className="input" type="number" value={settings.defaultTaxRate || ''} onChange={e => setLocalSettings((p: any) => ({ ...p, defaultTaxRate: Number(e.target.value) }))} /></div>
+            <div><label className="label">{t['settingsPage.taxRate'] || 'Tax Rate (%)'}</label><input className="input" type="number" value={settings.defaultTaxRate || ''} onChange={e => setLocalSettings((p: any) => ({ ...p, defaultTaxRate: Number(e.target.value) }))} /></div>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               <input type="checkbox" id="demoMode" checked={!!settings.demoMode} onChange={e => setLocalSettings((p: any) => ({ ...p, demoMode: e.target.checked })) } />
-              <label htmlFor="demoMode" style={{ fontSize: '0.875rem' }}>Demo Mode</label>
+              <label htmlFor="demoMode" style={{ fontSize: '0.875rem' }}>{t['settingsPage.demoMode'] || 'Demo Mode'}</label>
             </div>
-            <button className="btn btn-primary" onClick={saveSettings} disabled={saving} style={{ width: 'fit-content' }}>{saving ? 'Saving...' : 'Save Changes'}</button>
+            <button className="btn btn-primary" onClick={saveSettings} disabled={saving} style={{ width: 'fit-content' }}>{saving ? (t.saving || 'Saving…') : (t.saveChanges || 'Save Changes')}</button>
           </div>
         </div>
       )}
@@ -255,18 +261,18 @@ export default function SettingsPage() {
 
           {/* Table */}
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table className="t-table">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
+                <tr>
                   {['User', 'Role', 'Status', 'Actions'].map(h => (
-                    <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'start', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{h}</th>
+                    <th key={h}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {users.map(u => (
-                  <tr key={u._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '0.75rem 1rem' }}>
+                  <tr key={u._id}>
+                    <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={{ width: 36, height: 36, borderRadius: '50%', background: roleMeta(u.role).bg, color: roleMeta(u.role).color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.9rem', flexShrink: 0, border: `1px solid ${roleMeta(u.role).color}30` }}>
                           {(u.name || u.email || '?')[0].toUpperCase()}
@@ -277,14 +283,14 @@ export default function SettingsPage() {
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: '0.75rem 1rem' }}><RoleBadge role={u.role} /></td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
+                    <td><RoleBadge role={u.role} /></td>
+                    <td>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.82rem', fontWeight: 500, color: u.isActive ? '#38a169' : '#e53e3e' }}>
                         <span style={{ width: 7, height: 7, borderRadius: '50%', background: u.isActive ? '#38a169' : '#e53e3e', display: 'inline-block' }} />
                         {u.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
+                    <td>
                       <div style={{ display: 'flex', gap: 6 }}>
                         {canWrite && (
                           <>
@@ -323,7 +329,7 @@ export default function SettingsPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'start', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, width: 160 }}>User</th>
+                <th style={{ textAlign: 'start', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, width: 160 }}>User</th>
                 {ALL_PERMISSIONS.map(p => (
                   <th key={p} style={{ padding: '0.5rem 0.25rem', fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600, textAlign: 'center', writingMode: 'vertical-lr', height: 80 }}>{p}</th>
                 ))}
@@ -331,8 +337,8 @@ export default function SettingsPage() {
             </thead>
             <tbody>
               {users.filter(u => u.role !== 'admin').map(u => (
-                <tr key={u._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '0.75rem 1rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                <tr key={u._id}>
+                  <td style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
                     <p style={{ fontWeight: 500 }}>{u.name || u.email}</p>
                     <div style={{ marginTop: 4 }}><RoleBadge role={u.role} /></div>
                   </td>

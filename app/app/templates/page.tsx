@@ -60,9 +60,9 @@ export default function TemplatesPage() {
   }
 
   return (
-    <div style={{ padding: '1.5rem', flex: 1 }}>
+    <div className="page-content">
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, flex: 1 }}>{t.templates}</h2>
+        <h2 style={{ fontSize: 'var(--fs-2xl)', fontWeight: 600, color: 'var(--fg-1)', letterSpacing: '-0.01em', flex: 1 }}>{t.templates}</h2>
         <input className="input" placeholder={t.search} value={search} onChange={e => setSearch(e.target.value)} style={{ width: 180 }} />
         <select className="input" value={filterType} onChange={e => setFilterType(e.target.value)} style={{ width: 140 }}>
           <option value="">{t.allTypes}</option>

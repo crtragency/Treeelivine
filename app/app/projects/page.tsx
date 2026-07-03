@@ -79,7 +79,7 @@ export default function ProjectsPage() {
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div>
                   <h3 style={{ fontSize: '0.95rem', fontWeight: 600 }}>{p.name}</h3>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{p.customerId?.name || '-'}</p>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{p.customer?.name || p.customerId?.name || '-'}</p>
                 </div>
                 <StatusBadge status={p.status || 'planning'} />
               </div>

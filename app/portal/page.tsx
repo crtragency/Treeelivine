@@ -77,8 +77,8 @@ export default function PortalDashboard() {
   const activeProjects = (data.projects || []).filter((p: any) => p.status === 'active').length
   const totalInvoices  = data.invoices?.length || 0
   const paidCount  = (data.invoices || []).filter((i: any) => i.status === 'paid').length
-  const paidAmt    = (data.invoices || []).filter((i: any) => i.status === 'paid').reduce((s: number, i: any) => s + (i.amountBase || 0), 0)
-  const unpaidAmt  = (data.invoices || []).filter((i: any) => i.status !== 'paid').reduce((s: number, i: any) => s + (i.amountBase || 0), 0)
+  const paidAmt    = (data.invoices || []).filter((i: any) => i.status === 'paid').reduce((s: number, i: any) => s + (i.amount ?? i.amountBase ?? 0), 0)
+  const unpaidAmt  = (data.invoices || []).filter((i: any) => i.status !== 'paid').reduce((s: number, i: any) => s + (i.amount ?? i.amountBase ?? 0), 0)
   const c = data.customer || {}
 
   return (
@@ -210,7 +210,7 @@ export default function PortalDashboard() {
                 <div key={inv._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.65rem 0.75rem', background: 'var(--surface2)', borderRadius: 9 }}>
                   <div>
                     <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--fg-1)' }}>{inv.invoiceNumber}</p>
-                    <p style={{ fontSize: '0.72rem', color: 'var(--fg-4)', marginTop: 2 }}>{inv.currency} {(inv.amountBase || 0).toLocaleString()}</p>
+                    <p style={{ fontSize: '0.72rem', color: 'var(--fg-4)', marginTop: 2 }}>{inv.currency} {(inv.amount ?? inv.amountBase ?? 0).toLocaleString()}</p>
                   </div>
                   <StatusBadge status={inv.status} />
                 </div>

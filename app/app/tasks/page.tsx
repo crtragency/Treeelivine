@@ -96,8 +96,8 @@ export default function TasksPage() {
               {tasks.map(task => (
                 <tr key={task._id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '0.75rem 1rem', fontWeight: 500 }}>{task.title}</td>
-                  <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{task.projectId?.name || '-'}</td>
-                  <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{task.currentAssigneeId?.name || '-'}</td>
+                  <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{task.project?.name || task.projectId?.name || '-'}</td>
+                  <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{task.assignee?.name || task.currentAssigneeId?.name || '-'}</td>
                   <td style={{ padding: '0.75rem 1rem' }}><StatusBadge status={task.priority || 'medium'} /></td>
                   <td style={{ padding: '0.75rem 1rem' }}>
                     <select value={task.status} onChange={e => handleStatusChange(task._id, e.target.value)} style={{ fontSize: '0.8rem', background: 'transparent', border: 'none', color: 'var(--text)', cursor: 'pointer' }}>

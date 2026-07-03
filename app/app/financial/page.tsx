@@ -76,8 +76,8 @@ export default function FinancialPage() {
     setDeleteTarget(null); setDeleting(false); fetchAll()
   }
 
-  const totalRevenue  = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + (i.amountBase || 0), 0)
-  const totalPending  = invoices.filter(i => ['unpaid', 'partial'].includes(i.status)).reduce((s, i) => s + (i.amountBase || 0), 0)
+  const totalRevenue  = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + (i.amount ?? i.amountBase ?? 0), 0)
+  const totalPending  = invoices.filter(i => ['unpaid', 'partial'].includes(i.status)).reduce((s, i) => s + (i.amount ?? i.amountBase ?? 0), 0)
   const totalExpenses = expenses.reduce((s, e) => s + (e.amount || 0), 0)
   const netProfit     = totalRevenue - totalExpenses
 

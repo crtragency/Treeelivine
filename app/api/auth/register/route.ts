@@ -6,14 +6,15 @@ import { cookies } from 'next/headers'
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password, name, role, phone, company } = await req.json()
+    const { email, password, name, phone, company } = await req.json()
     if (!email || !password) return Response.json({ success: false, message: 'Missing fields' }, { status: 400 })
 
     const { data: existing } = await supabase.from('users').select('id').eq('email', email.toLowerCase()).single()
     if (existing) return Response.json({ success: false, message: 'Email already exists' }, { status: 409 })
 
     const hash = await bcrypt.hash(password, 10)
-    const userRole = role || 'client'
+    // Self-registration always creates a client account — staff accounts are created from Settings
+    const userRole = 'client'
     const { data: user, error } = await supabase.from('users').insert({
       email: email.toLowerCase(), password: hash, name, role: userRole
     }).select().single()

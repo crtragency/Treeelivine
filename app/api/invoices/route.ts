@@ -37,8 +37,14 @@ export async function POST(req: NextRequest) {
   const customerId = body.customerId || body.customer_id
   if (!customerId) return Response.json({ success: false, message: 'Customer is required' }, { status: 400 })
 
+  let invoiceNumber = body.invoiceNumber || body.invoice_number
+  if (!invoiceNumber) {
+    const { count } = await supabase.from('invoices').select('*', { count: 'exact', head: true })
+    invoiceNumber = `INV-${new Date().getFullYear()}-${String((count || 0) + 1).padStart(3, '0')}`
+  }
+
   const { data, error } = await supabase.from('invoices').insert({
-    invoice_number: body.invoiceNumber || body.invoice_number,
+    invoice_number: invoiceNumber,
     customer_id: customerId,
     project_id: body.projectId || body.project_id || null,
     status: body.status || 'unpaid',

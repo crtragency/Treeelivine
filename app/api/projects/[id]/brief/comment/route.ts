@@ -9,8 +9,18 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const { text } = await req.json()
   if (!text?.trim()) return Response.json({ success: false, message: 'Comment text required' }, { status: 400 })
 
-  const { data: project } = await supabase.from('projects').select('brief_comments').eq('id', params.id).single()
+  const { data: project } = await supabase.from('projects').select('brief_comments, customer_id').eq('id', params.id).single()
   if (!project) return Response.json({ success: false, message: 'Not found' }, { status: 404 })
+
+  // Clients may only comment on their own projects
+  if (user.role === 'client') {
+    const { data: customer } = project.customer_id
+      ? await supabase.from('customers').select('user_id').eq('id', project.customer_id).single()
+      : { data: null }
+    if (customer?.user_id !== user.id) {
+      return Response.json({ success: false, message: 'Forbidden' }, { status: 403 })
+    }
+  }
 
   const existingComments = Array.isArray(project.brief_comments) ? project.brief_comments : []
   const newComment = { authorId: user.id, authorName: user.name || user.email, text, createdAt: new Date().toISOString() }

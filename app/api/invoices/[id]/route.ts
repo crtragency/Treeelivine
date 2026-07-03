@@ -6,12 +6,19 @@ import { toApi } from '@/lib/utils'
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const user = await getAuthUser(req)
   if (!user) return unauthorizedResponse()
-  if (!hasPermission(user, 'finance.read')) return forbiddenResponse()
 
   const { data } = await supabase.from('invoices')
-    .select('*, customer:customers(id,name,email,company,phone), project:projects(id,name)')
+    .select('*, customer:customers(id,name,email,company,phone,user_id), project:projects(id,name)')
     .eq('id', params.id).single()
   if (!data) return Response.json({ success: false, message: 'Not found' }, { status: 404 })
+
+  // Clients can only view their own invoices; staff need finance.read
+  if (user.role === 'client') {
+    if ((data as any).customer?.user_id !== user.id) return forbiddenResponse()
+  } else if (!hasPermission(user, 'finance.read')) {
+    return forbiddenResponse()
+  }
+
   return Response.json({ success: true, data: toApi(data) })
 }
 

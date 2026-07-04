@@ -10,7 +10,7 @@ const DEMO_PASSWORD = 'demo1234'
 export async function POST(_req: NextRequest) {
   try {
     // Clean up existing demo data
-    for (const table of ['tasks','invoices','expenses','quotations','support_tickets','projects','templates','employees','customers','users']) {
+    for (const table of ['time_entries','leads','contracts','notes','activities','reminders','attachments','tasks','invoices','expenses','quotations','support_tickets','projects','templates','employees','customers','users']) {
       await supabase.from(table).delete().eq('is_demo', true)
     }
 
@@ -30,6 +30,9 @@ export async function POST(_req: NextRequest) {
       { name: 'نورة القحطاني', email: 'noura@treeelivine.com', phone: '0504444444', internal_role: 'project_manager', salary: 9000, is_demo: true },
     ]
     const { data: employees } = await supabase.from('employees').insert(empInserts).select()
+    if (employees?.length) {
+      await supabase.from('employees').update({ user_id: demoUser.id }).eq('id', employees[0].id)
+    }
 
     // Create demo customers
     const custInserts = [
@@ -125,6 +128,53 @@ export async function POST(_req: NextRequest) {
       { name: 'بريف إدارة السوشيال ميديا', type: 'brief', category: 'social_media', content: 'اسم العميل:\nالمنصات المطلوبة:\nعدد المنشورات أسبوعياً:\nالهوية البصرية:', created_by: demoUser.id, is_demo: true },
       { name: 'بريف تصميم الهوية', type: 'brief', category: 'branding', content: 'اسم الشركة:\nقطاع النشاط:\nالألوان المفضلة:\nالرسالة الأساسية:', created_by: demoUser.id, is_demo: true },
     ])
+
+    // Create demo leads pipeline
+    {
+      const inDays = (n: number) => new Date(Date.now() + n * 86400000).toISOString()
+      const { data: demoLeads } = await supabase.from('leads').insert([
+        { name: 'شركة الأفق الجديد', company: 'الأفق', email: 'info@ofoq.sa', source: 'website', stage: 'new', score: 30, expected_value: 12000, is_demo: true },
+        { name: 'مؤسسة النخبة', company: 'النخبة', phone: '0553334444', source: 'referral', stage: 'contacted', score: 45, expected_value: 20000, next_reminder_at: inDays(2), is_demo: true },
+        { name: 'متجر لمسة', company: 'لمسة', source: 'social', stage: 'meeting_scheduled', score: 60, expected_value: 9000, next_reminder_at: inDays(1), is_demo: true },
+        { name: 'عيادات البسمة', company: 'البسمة', source: 'ads', stage: 'proposal_sent', score: 70, expected_value: 30000, is_demo: true },
+        { name: 'شركة رواد التقنية', company: 'رواد', source: 'event', stage: 'negotiation', score: 85, expected_value: 45000, next_reminder_at: inDays(-1), is_demo: true },
+        { name: 'مطاعم الضيافة', company: 'الضيافة', source: 'referral', stage: 'won', score: 95, expected_value: 25000, won_at: new Date().toISOString(), is_demo: true },
+        { name: 'معرض الديكور', company: 'الديكور', source: 'cold_call', stage: 'lost', score: 20, expected_value: 8000, lost_at: new Date().toISOString(), lost_reason: 'الميزانية', is_demo: true },
+      ]).select()
+      if (demoLeads?.length) {
+        await supabase.from('activities').insert(demoLeads.slice(0, 3).map(l => ({
+          entity_type: 'lead', entity_id: l.id, action: 'created', actor_name: 'Demo Admin', is_demo: true,
+        })))
+      }
+    }
+
+    // Create demo contract + notes + time entries
+    if (customers?.length && employees?.length) {
+      await supabase.from('contracts').insert([
+        { contract_number: 'CT-2024-001', title: 'عقد إدارة السوشيال ميديا السنوي', customer_id: customers[0].id, status: 'signed', value: 48000, currency: 'SAR', start_date: new Date(Date.now() - 30 * 86400000).toISOString(), end_date: new Date(Date.now() + 335 * 86400000).toISOString(), signed_at: new Date(Date.now() - 28 * 86400000).toISOString(), signed_by_name: 'عبدالله السالم', is_demo: true },
+        { contract_number: 'CT-2024-002', title: 'عقد تصميم الهوية البصرية', customer_id: customers[1].id, status: 'sent', value: 17250, currency: 'SAR', is_demo: true },
+      ])
+      await supabase.from('notes').insert([
+        { entity_type: 'customer', entity_id: customers[0].id, body: 'العميل يفضل التواصل عبر واتساب صباحاً. مهتم بتوسيع التعاقد ليشمل تيك توك.', pinned: true, author_name: 'Demo Admin', is_demo: true },
+      ])
+      const hour = 3600 * 1000
+      const day = 24 * hour
+      const entries = [] as any[]
+      for (let d = 0; d < 4; d++) {
+        const start = new Date(Date.now() - d * day - 6 * hour)
+        entries.push({
+          employee_id: employees[d % employees.length].id,
+          description: ['تصميم بوستات الأسبوع', 'مراجعة الهوية', 'اجتماع متابعة', 'كتابة محتوى'][d],
+          started_at: start.toISOString(),
+          ended_at: new Date(start.getTime() + (2 + d % 3) * hour).toISOString(),
+          duration_seconds: (2 + d % 3) * 3600,
+          billable: d !== 2,
+          source: 'manual',
+          is_demo: true,
+        })
+      }
+      await supabase.from('time_entries').insert(entries)
+    }
 
     // Auto-login demo user
     const token = signToken(demoUser.id)

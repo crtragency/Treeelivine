@@ -18,6 +18,8 @@ export async function GET(req: NextRequest) {
 
   query = query.eq('is_demo', !!user.isDemo)
   if (status) query = query.eq('status', status)
+  const customerId = searchParams.get('customerId')
+  if (customerId) query = query.eq('customer_id', customerId)
 
   if (user.role === 'team') {
     const { data: emp } = await supabase.from('employees').select('id').eq('user_id', user.id).single()

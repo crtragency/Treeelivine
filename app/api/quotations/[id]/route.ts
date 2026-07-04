@@ -18,15 +18,22 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (!user) return unauthorizedResponse()
   if (user.isDemo) return demoReadOnlyResponse()
 
-  const { customerId, projectId, status, currency, items, taxRate, validUntil, notes } = await req.json()
+  const body = await req.json()
+  const { customerId, projectId, status, currency, items, taxRate, validUntil, notes } = body
 
   const parsedItems: any[] = Array.isArray(items) ? items : []
   const subtotal = parsedItems.reduce((s: number, i: any) => s + (Number(i.qty || 1) * Number(i.price || 0)), 0)
+  const discountType = body.discountType === 'percent' || body.discountType === 'fixed' ? body.discountType : 'none'
+  const discountValue = Number(body.discountValue || 0)
+  const discountAmount = discountType === 'percent' ? subtotal * (discountValue / 100)
+    : discountType === 'fixed' ? Math.min(discountValue, subtotal) : 0
   const tr = Number(taxRate || 0)
-  const taxAmount = subtotal * (tr / 100)
-  const total = subtotal + taxAmount
+  const taxAmount = (subtotal - discountAmount) * (tr / 100)
+  const total = subtotal - discountAmount + taxAmount
 
   const { data, error } = await supabase.from('quotations').update({
+    discount_type: discountType,
+    discount_value: discountValue,
     customer_id: customerId || null,
     project_id: projectId || null,
     status: status || 'draft',

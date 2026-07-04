@@ -75,6 +75,14 @@ export async function POST(req: NextRequest) {
     priority: body.priority || 'medium',
     notes: body.notes,
     assigned_to: body.assignedTo || null,
+    contact_person: body.contactPerson || null,
+    whatsapp: body.whatsapp || null,
+    industry: body.industry || null,
+    country: body.country || null,
+    address: body.address || null,
+    website: body.website || null,
+    tax_number: body.taxNumber || null,
+    tags: Array.isArray(body.tags) ? body.tags : [],
   }).select().single()
 
   if (error) return Response.json({ success: false, message: error.message }, { status: 500 })

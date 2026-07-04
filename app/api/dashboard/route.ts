@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { getAuthUser, unauthorizedResponse } from '@/lib/auth'
+import { getAuthUser, hasPermission, unauthorizedResponse } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 import { syncRecurringSalaryExpenses } from '@/lib/salary-sync'
 
@@ -24,6 +24,10 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const start = rangeStart(searchParams.get('range') || '30d')
 
+  const canFinance = hasPermission(user, 'finance.read')
+  const canCrm = hasPermission(user, 'crm.read')
+  const isTeamScope = user.role === 'team'
+
   const isDemo = !!user.isDemo
   const [
     { data: customers },
@@ -34,7 +38,7 @@ export async function GET(req: NextRequest) {
   ] = await Promise.all([
     supabase.from('customers').select('id, name, status, created_at').eq('is_demo', isDemo),
     supabase.from('projects').select('id, name, status, task_progress_percent, due_date, updated_at, customer_id, customer:customers(id,name)').eq('is_demo', isDemo),
-    supabase.from('tasks').select('id, title, status, due_date, project_id, updated_at, assignee:employees(id,name)').eq('is_demo', isDemo),
+    supabase.from('tasks').select('id, title, status, due_date, project_id, current_assignee_id, updated_at, assignee:employees(id,name)').eq('is_demo', isDemo),
     supabase.from('invoices').select('id, invoice_number, status, amount, paid_amount, issue_date, created_at, updated_at, customer:customers(id,name)').eq('is_demo', isDemo),
     supabase.from('expenses').select('id, amount, date, is_recurring_salary').eq('is_demo', isDemo),
   ])
@@ -80,7 +84,14 @@ export async function GET(req: NextRequest) {
   for (const t of overdueTasksList) {
     if (t.project_id) overdueByProject.set(t.project_id, (overdueByProject.get(t.project_id) || 0) + 1)
   }
-  const projectsAttention = (projects || [])
+  let scopedProjects = projects || []
+  if (isTeamScope) {
+    const { data: empRow } = await supabase.from('employees').select('id').eq('user_id', user.id).single()
+    if (empRow) scopedProjects = scopedProjects.filter(p =>
+      Array.isArray((p as any).assigned_employee_ids) && (p as any).assigned_employee_ids.includes(empRow.id))
+    else scopedProjects = []
+  }
+  const projectsAttention = (scopedProjects || [])
     .map(p => ({
       id: p.id,
       name: p.name,
@@ -98,32 +109,65 @@ export async function GET(req: NextRequest) {
   type Act = { type: string; title: string; status: string; at: string }
   const activity: Act[] = []
   for (const t of tasks || []) activity.push({ type: 'task', title: t.title, status: t.status, at: t.updated_at })
-  for (const i of invoices || []) activity.push({ type: 'invoice', title: i.invoice_number || '—', status: i.status, at: i.updated_at })
-  for (const c of customers || []) activity.push({ type: 'customer', title: c.name, status: c.status, at: c.created_at })
+  if (canFinance) for (const i of invoices || []) activity.push({ type: 'invoice', title: i.invoice_number || '—', status: i.status, at: i.updated_at })
+  if (canCrm) for (const c of customers || []) activity.push({ type: 'customer', title: c.name, status: c.status, at: c.created_at })
   activity.sort((a, b) => (b.at || '').localeCompare(a.at || ''))
 
   // CRM pipeline counts
   const pipeline: Record<string, number> = {}
   for (const c of customers || []) pipeline[c.status] = (pipeline[c.status] || 0) + 1
 
+  // Personal scope for team members: their own tasks / projects / hours
+  let my: any = null
+  if (isTeamScope) {
+    const { data: emp } = await supabase.from('employees').select('id, name').eq('user_id', user.id).single()
+    if (emp) {
+      const myOpen = (tasks || []).filter(t2 => t2.current_assignee_id === emp.id && openStatuses(t2.status))
+      const myOverdue = myOpen.filter(t2 => t2.due_date && new Date(t2.due_date) < now)
+      const myProjects = (projects || []).filter(p =>
+        Array.isArray((p as any).assigned_employee_ids) && (p as any).assigned_employee_ids.includes(emp.id))
+      const weekStart = new Date(now); weekStart.setDate(weekStart.getDate() - weekStart.getDay()); weekStart.setHours(0, 0, 0, 0)
+      const { data: weekEntries } = await supabase.from('time_entries')
+        .select('duration_seconds').eq('employee_id', emp.id).gte('started_at', weekStart.toISOString()).not('ended_at', 'is', null)
+      my = {
+        openTasks: myOpen.length,
+        overdueTasks: myOverdue.length,
+        activeProjects: myProjects.filter(p => ['active', 'in_progress'].includes(p.status)).length,
+        weekSeconds: (weekEntries || []).reduce((s2, e) => s2 + (Number(e.duration_seconds) || 0), 0),
+        tasks: myOpen
+          .sort((a, b) => (a.due_date || '9999').localeCompare(b.due_date || '9999'))
+          .slice(0, 7)
+          .map(t2 => ({
+            id: t2.id, title: t2.title, status: t2.status, dueDate: t2.due_date,
+            project: (projects || []).find(p => p.id === t2.project_id)?.name || null,
+          })),
+      }
+    } else {
+      my = { openTasks: 0, overdueTasks: 0, activeProjects: 0, weekSeconds: 0, tasks: [] }
+    }
+  }
+
   return Response.json({
     success: true,
     data: {
+      scope: isTeamScope ? 'personal' : 'full',
       activeCustomers,
       totalCustomers: customers?.length ?? 0,
       activeProjects,
       openTasks,
       overdueTasks: overdueTasksList.length,
-      collected,
-      unpaidAmt,
-      unpaidInvoices,
-      overdueInvoices,
-      totalExpenses,
-      net: collected - totalExpenses,
-      monthly,
+      // finance figures only for roles that may see money
+      collected: canFinance ? collected : null,
+      unpaidAmt: canFinance ? unpaidAmt : null,
+      unpaidInvoices: canFinance ? unpaidInvoices : null,
+      overdueInvoices: canFinance ? overdueInvoices : null,
+      totalExpenses: canFinance ? totalExpenses : null,
+      net: canFinance ? collected - totalExpenses : null,
+      monthly: canFinance ? monthly : null,
       projectsAttention,
       activity: activity.slice(0, 7),
-      pipeline,
+      pipeline: canCrm ? pipeline : null,
+      my,
     },
   })
 }

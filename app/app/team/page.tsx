@@ -4,8 +4,11 @@ import { useApp } from '@/contexts/AppContext'
 import Modal from '@/components/ui/Modal'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import PasswordInput from '@/components/ui/PasswordInput'
 
 const ROLES = ['manager', 'designer', 'developer', 'copywriter', 'account_manager', 'other']
+
+const SYSTEM_ROLES = ['team', 'manager', 'finance', 'viewer', 'admin']
 
 export default function TeamPage() {
   const { t, hasPermission } = useApp()
@@ -30,7 +33,7 @@ export default function TeamPage() {
   useEffect(() => { fetchEmployees() }, [])
 
   function openCreate() { setForm({}); setEditing(null); setModalOpen(true) }
-  function openEdit(e: any) { setForm({ ...e }); setEditing(e); setModalOpen(true) }
+  function openEdit(e: any) { setForm({ ...e, systemRole: e.account?.role || 'team', password: '' }); setEditing(e); setModalOpen(true) }
 
   async function handleSave() {
     setSaving(true)
@@ -38,6 +41,7 @@ export default function TeamPage() {
     const res = await fetch(url, { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
     const data = await res.json()
     if (data.success) { setModalOpen(false); fetchEmployees() }
+    else alert(data.message || 'Error')
     setSaving(false)
   }
 
@@ -78,6 +82,11 @@ export default function TeamPage() {
                 </div>
               </div>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>{emp.email}</p>
+              <div style={{ marginBottom: '0.75rem' }}>
+                {emp.userId
+                  ? <span className="pill pill-active"><span className="dot" />{t['teamAccount.linked'] || 'Has login'}</span>
+                  : <span className="pill pill-draft"><span className="dot" />{t['teamAccount.noAccount'] || 'No login'}</span>}
+              </div>
               {stats[emp._id] && (
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
                   <span style={{ fontSize: '0.75rem', background: 'var(--surface2)', padding: '0.2rem 0.5rem', borderRadius: 6 }}>{t['team.tasks'] || t.tasks}: {stats[emp._id].taskCount}</span>
@@ -109,6 +118,36 @@ export default function TeamPage() {
             </select>
           </div>
           <div><label className="label">{t.salary} ({t.monthly})</label><input className="input" type="number" value={form.salary || ''} onChange={e => setForm((p: any) => ({ ...p, salary: Number(e.target.value) }))} /></div>
+
+          {/* ── Login account ── */}
+          <div style={{ borderTop: '1px solid var(--border-1)', paddingTop: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--fg-1)' }}>{t['teamAccount.section'] || 'Login account'}</span>
+              {editing?.userId && <span className="pill pill-active"><span className="dot" />{t['teamAccount.linked'] || 'Linked'}</span>}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.875rem' }}>
+              <div>
+                <label className="label">{t['teamAccount.systemRole'] || 'System role'}</label>
+                <select className="input" value={form.systemRole || 'team'} onChange={e => setForm((p: any) => ({ ...p, systemRole: e.target.value }))}>
+                  {SYSTEM_ROLES.map(r => <option key={r} value={r}>{t[`settingsPage.role${r.charAt(0).toUpperCase() + r.slice(1)}Desc`] ? `${r} — ${t[`settingsPage.role${r.charAt(0).toUpperCase() + r.slice(1)}Desc`]}` : r}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="label">
+                  {editing?.userId
+                    ? (t['teamAccount.resetPassword'] || 'New password (leave blank to keep)')
+                    : (t['teamAccount.password'] || 'Login password')}
+                </label>
+                <PasswordInput value={form.password || ''} placeholder={editing?.userId ? '••••••••' : (t['teamAccount.minChars'] || 'Min 6 characters')} onChange={e => setForm((p: any) => ({ ...p, password: e.target.value }))} />
+              </div>
+            </div>
+            {!editing?.userId && (
+              <p style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-4)', margin: 0 }}>
+                {t['teamAccount.hint'] || 'Set a password to create a login for this employee with the selected role. Leave blank to skip.'}
+              </p>
+            )}
+          </div>
+
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
             <button className="btn btn-secondary" onClick={() => setModalOpen(false)}>{t.cancel}</button>
             <button className="btn btn-primary" onClick={handleSave} disabled={saving}>{saving ? '...' : t.save}</button>

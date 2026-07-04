@@ -129,7 +129,7 @@ const PIPELINE_STAGES = [
 ]
 
 export default function DashboardPage() {
-  const { t, settings, user, lang } = useApp()
+  const { t, settings, user, lang, hasPermission } = useApp()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [range, setRange] = useState('30d')
@@ -176,13 +176,57 @@ export default function DashboardPage() {
 
       {loading ? <LoadingSpinner /> : data ? (
         <>
-          {/* ── KPI row ─────────────────────────────────────── */}
+          {/* ── KPI row (shaped by role) ─────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
-            <Kpi label={t.activeCustomers} value={fmt(data.activeCustomers)} sub={`${fmt(data.totalCustomers)} ${t.customers}`} />
-            <Kpi label={t.collected} value={fmt(data.collected)} unit={cur} sub={`${t.net}: ${cur} ${fmt(data.net)}`} subTone={data.net >= 0 ? 'up' : 'down'} />
-            <Kpi label={t.unpaidInvoices} value={fmt(data.unpaidAmt)} unit={cur} sub={`${fmt(data.unpaidInvoices)} ${t.invoiceActivity}`} subTone={data.unpaidInvoices > 0 ? 'down' : 'up'} />
-            <Kpi label={t.overdueTasks} value={fmt(data.overdueTasks)} sub={`${fmt(data.openTasks)} ${t.openTasks}`} subTone={data.overdueTasks > 0 ? 'down' : 'up'} />
+            {data.scope === 'personal' && data.my ? (
+              <>
+                <Kpi label={t.myOpenTasks} value={fmt(data.my.openTasks)} sub={`${fmt(data.my.overdueTasks)} ${t.overdueTasks}`} subTone={data.my.overdueTasks > 0 ? 'down' : 'up'} />
+                <Kpi label={t.myProjects} value={fmt(data.my.activeProjects)} />
+                <Kpi label={t.myWeekHours} value={`${Math.floor(data.my.weekSeconds / 3600)}:${String(Math.floor((data.my.weekSeconds % 3600) / 60)).padStart(2, '0')}`} />
+                <Kpi label={t.overdueTasks} value={fmt(data.overdueTasks)} sub={`${fmt(data.openTasks)} ${t.openTasks}`} subTone={data.overdueTasks > 0 ? 'down' : 'up'} />
+              </>
+            ) : (
+              <>
+                <Kpi label={t.activeCustomers} value={fmt(data.activeCustomers)} sub={`${fmt(data.totalCustomers)} ${t.customers}`} />
+                {data.collected !== null && (
+                  <Kpi label={t.collected} value={fmt(data.collected)} unit={cur} sub={`${t.net}: ${cur} ${fmt(data.net)}`} subTone={data.net >= 0 ? 'up' : 'down'} />
+                )}
+                {data.unpaidAmt !== null && (
+                  <Kpi label={t.unpaidInvoices} value={fmt(data.unpaidAmt)} unit={cur} sub={`${fmt(data.unpaidInvoices)} ${t.invoiceActivity}`} subTone={data.unpaidInvoices > 0 ? 'down' : 'up'} />
+                )}
+                <Kpi label={t.overdueTasks} value={fmt(data.overdueTasks)} sub={`${fmt(data.openTasks)} ${t.openTasks}`} subTone={data.overdueTasks > 0 ? 'down' : 'up'} />
+              </>
+            )}
           </div>
+
+          {/* ── My tasks (team members) ─────────────────────── */}
+          {data.scope === 'personal' && data.my?.tasks?.length > 0 && (
+            <div className="card-surface">
+              <div className="card-head">
+                <h3>{t.myTasksTitle}</h3>
+                <Link href="/app/tasks" className="btn btn-ghost btn-sm">{t.viewAll}</Link>
+              </div>
+              <div className="table-scroll">
+                <table className="t-table">
+                  <thead>
+                    <tr><th>{t.taskActivity}</th><th>{t.project}</th><th>{t.status}</th><th style={{ textAlign: 'end' }}>{t.dueDate}</th></tr>
+                  </thead>
+                  <tbody>
+                    {data.my.tasks.map((tk: any) => (
+                      <tr key={tk.id}>
+                        <td className="td-name">{tk.title}</td>
+                        <td>{tk.project || '—'}</td>
+                        <td><StatusBadge status={tk.status} /></td>
+                        <td style={{ textAlign: 'end', fontFamily: 'var(--font-mono)', fontSize: 12, color: tk.dueDate && new Date(tk.dueDate) < new Date() ? 'var(--danger-600)' : 'var(--fg-3)' }}>
+                          {tk.dueDate ? new Date(tk.dueDate).toLocaleDateString(locale, { month: 'short', day: 'numeric' }) : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           {/* ── Attention table + activity feed ─────────────── */}
           <div className="dash-bottom-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, alignItems: 'start' }}>
@@ -260,7 +304,8 @@ export default function DashboardPage() {
           </div>
 
           {/* ── Chart + quick actions ───────────────────────── */}
-          <div className="dash-bottom-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, alignItems: 'start' }}>
+          <div className="dash-bottom-grid" style={{ display: 'grid', gridTemplateColumns: data.monthly ? '2fr 1fr' : '1fr', gap: 16, alignItems: 'start' }}>
+            {data.monthly && (
             <div className="card-surface">
               <div className="card-head">
                 <div>
@@ -280,21 +325,25 @@ export default function DashboardPage() {
                 <RevenueChart monthly={data.monthly || []} cur={cur} lang={lang} t={t} />
               </div>
             </div>
+            )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {(hasPermission('finance.write') || hasPermission('crm.write') || hasPermission('projects.write')) && (
               <div className="card-surface">
                 <div className="card-head"><h3>{t.quickActions}</h3></div>
                 <div style={{ padding: 'var(--space-3) var(--space-4) var(--space-4)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <Link href="/app/invoices" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.Invoice /> {t.newInvoice}</Link>
-                  <Link href="/app/clients" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.User /> {t.addCustomer}</Link>
-                  <Link href="/app/projects" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.Folder /> {t.newProject}</Link>
-                  <Link href="/app/financial" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.Receipt /> {t.logExpense}</Link>
+                  {hasPermission('finance.write') && <Link href="/app/invoices" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.Invoice /> {t.newInvoice}</Link>}
+                  {hasPermission('crm.write') && <Link href="/app/clients" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.User /> {t.addCustomer}</Link>}
+                  {hasPermission('projects.write') && <Link href="/app/projects" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.Folder /> {t.newProject}</Link>}
+                  {hasPermission('finance.write') && <Link href="/app/financial" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.Receipt /> {t.logExpense}</Link>}
                 </div>
               </div>
+              )}
             </div>
           </div>
 
           {/* ── CRM pipeline strip ──────────────────────────── */}
+          {data.pipeline && (
           <div className="card-surface">
             <div className="card-head">
               <h3>{t.pipelineTitle}</h3>
@@ -311,6 +360,7 @@ export default function DashboardPage() {
               ))}
             </div>
           </div>
+          )}
         </>
       ) : (
         <div style={{ padding: 'var(--space-12)', textAlign: 'center', color: 'var(--fg-4)' }}>{t.noData}</div>

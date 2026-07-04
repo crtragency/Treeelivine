@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useApp } from '@/contexts/AppContext'
+import TimerBar from '@/components/ui/TimerBar'
 
 /* ── Lucide-style SVG icons (inline, no dep needed) ─────────────────── */
 function Icon({ d, size = 16 }: { d: string | string[]; size?: number }) {
@@ -36,6 +37,7 @@ const Icons = {
   Receipt:   () => <Icon d={['M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z', 'M14 2v6h6M16 13H8M16 17H8M12 9H8']} />,
   TrendUp:   () => <Icon d={['M23 6l-9.5 9.5-5-5L1 18', 'M17 6h6v6']} />,
   Briefcase: () => <Icon d={['M20 7H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z', 'M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2']} />,
+  Clock:     () => <Icon d={['M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z', 'M12 6v6l4 2']} />,
 }
 
 /* ── Brand logo image ────────────────────────────────────────────────── */
@@ -53,6 +55,7 @@ const NAV_SECTIONS = [
     items: [
       { href: '/app',                  labelAr: 'اللوحة الرئيسية', labelEn: 'Dashboard',        Icon: Icons.Dashboard, perm: null,           exact: true },
       { href: '/app/projects',         labelAr: 'المشاريع',        labelEn: 'Projects',          Icon: Icons.Folder,    perm: 'projects.read' },
+      { href: '/app/leads',            labelAr: 'العملاء المحتملون', labelEn: 'Leads',            Icon: Icons.TrendUp,   perm: 'leads.read' },
       { href: '/app/support-tickets',  labelAr: 'طلبات الدعم',     labelEn: 'Support Tickets',   Icon: Icons.Headset,   perm: null },
       { href: '/app/clients',          labelAr: 'العملاء',         labelEn: 'Clients',           Icon: Icons.Users,     perm: 'crm.read' },
       { href: '/app/quotations',       labelAr: 'عروض الأسعار',    labelEn: 'Quotations',        Icon: Icons.Clipboard, perm: 'finance.read' },
@@ -66,6 +69,7 @@ const NAV_SECTIONS = [
       { href: '/app/hr-payroll',       labelAr: 'الموارد البشرية', labelEn: 'HR & Payroll',      Icon: Icons.Briefcase, perm: 'team.read' },
       { href: '/app/team',             labelAr: 'الفريق',          labelEn: 'Team',              Icon: Icons.Building,  perm: 'team.read' },
       { href: '/app/tasks',            labelAr: 'المهام',          labelEn: 'Tasks',             Icon: Icons.CheckSq,   perm: 'tasks.read' },
+      { href: '/app/time',             labelAr: 'تتبع الوقت',      labelEn: 'Time Tracking',     Icon: Icons.Clock,     perm: 'time.read' },
     ],
   },
   {
@@ -191,6 +195,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
           {/* Right controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', marginInlineStart: 'auto' }}>
+            <TimerBar />
             <button
               className="iconbtn"
               style={{ width: 'auto', padding: '0 var(--space-2)', gap: 4 }}

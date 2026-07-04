@@ -6,7 +6,7 @@ import Modal from '@/components/ui/Modal'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
-const QUOTE_STATUSES = ['draft', 'sent', 'accepted', 'rejected', 'expired']
+const QUOTE_STATUSES = ['draft', 'sent', 'viewed', 'accepted', 'rejected', 'expired']
 
 const IC = ({ d, size = 16 }: { d: string | string[]; size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
@@ -30,6 +30,7 @@ export default function QuotationsPage() {
   const [form,       setForm]       = useState<any>({})
   const [items,      setItems]      = useState<any[]>([])
   const [saving,     setSaving]     = useState(false)
+  const [copied,     setCopied]     = useState('')
 
   async function fetchAll() {
     setLoading(true)
@@ -60,8 +61,20 @@ export default function QuotationsPage() {
 
   function calcTotals() {
     const subtotal  = items.reduce((s, i) => s + Number(i.qty || 1) * Number(i.price || 0), 0)
-    const taxAmount = subtotal * (Number(form.taxRate || 0) / 100)
-    return { subtotal, taxAmount, total: subtotal + taxAmount }
+    const discount  = form.discountType === 'percent' ? subtotal * (Number(form.discountValue || 0) / 100)
+      : form.discountType === 'fixed' ? Math.min(Number(form.discountValue || 0), subtotal) : 0
+    const taxAmount = (subtotal - discount) * (Number(form.taxRate || 0) / 100)
+    return { subtotal, discount, taxAmount, total: subtotal - discount + taxAmount }
+  }
+
+  async function sendQuote(q: any) {
+    const res = await fetch(`/api/quotations/${q._id}/send`, { method: 'POST' })
+    const data = await res.json()
+    if (data.success) {
+      try { await navigator.clipboard.writeText(data.data.shareUrl) } catch {}
+      setCopied(q._id); setTimeout(() => setCopied(''), 2500)
+      fetchAll()
+    } else alert(data.message)
   }
 
   async function handleSave() {
@@ -169,6 +182,11 @@ export default function QuotationsPage() {
                   <td style={{ fontSize: '0.82rem', color: 'var(--fg-4)' }}>{q.validUntil ? new Date(q.validUntil).toLocaleDateString() : '—'}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
+                      {hasPermission('finance.write') && (
+                        <button className="btn btn-secondary" onClick={() => sendQuote(q)} style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}>
+                          {copied === q._id ? (t['quoteShare.linkCopied'] || 'Copied') : ['draft', 'expired'].includes(q.status) ? (t['quoteShare.send'] || 'Send') : (t['quoteShare.copyLink'] || 'Copy Link')}
+                        </button>
+                      )}
                       {hasPermission('finance.write') && <button className="btn btn-secondary" onClick={() => openEdit(q)} style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}>{t.edit || 'Edit'}</button>}
                       {hasPermission('finance.write') && <button className="btn btn-danger" onClick={() => setDeleteTarget(q)} style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}>{t.delete || 'Delete'}</button>}
                     </div>
@@ -212,6 +230,17 @@ export default function QuotationsPage() {
               </select>
             </div>
             <div><label className="label">{t.taxRate || 'Tax Rate %'}</label><input className="input" type="number" value={form.taxRate ?? 15} onChange={e => setForm((p: any) => ({ ...p, taxRate: Number(e.target.value) }))} /></div>
+            <div>
+              <label className="label">{t['quoteShare.discount'] || 'Discount'}</label>
+              <select className="input" value={form.discountType || 'none'} onChange={e => setForm((p: any) => ({ ...p, discountType: e.target.value }))}>
+                <option value="none">{t['quoteShare.discountNone'] || 'None'}</option>
+                <option value="percent">{t['quoteShare.discountPercent'] || 'Percent %'}</option>
+                <option value="fixed">{t['quoteShare.discountFixed'] || 'Fixed'}</option>
+              </select>
+            </div>
+            {form.discountType && form.discountType !== 'none' && (
+              <div><label className="label">{t['quoteShare.discount'] || 'Discount'} {form.discountType === 'percent' ? '%' : ''}</label><input className="input" type="number" value={form.discountValue ?? 0} onChange={e => setForm((p: any) => ({ ...p, discountValue: Number(e.target.value) }))} /></div>
+            )}
             <div><label className="label">{t.validUntil || 'Valid Until'}</label><input className="input" type="date" value={form.validUntil ? form.validUntil.substring(0, 10) : ''} onChange={e => setForm((p: any) => ({ ...p, validUntil: e.target.value }))} /></div>
           </div>
 

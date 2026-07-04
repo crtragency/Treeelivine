@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useApp } from '@/contexts/AppContext'
 import StatusBadge from '@/components/ui/StatusBadge'
 import Modal from '@/components/ui/Modal'
@@ -127,7 +128,7 @@ export default function ClientsPage() {
                         {(c.name || '?')[0].toUpperCase()}
                       </div>
                       <div>
-                        <p style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--fg-1)' }}>{c.name}</p>
+                        <Link href={`/app/clients/${c._id}`} style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--fg-1)' }}>{c.name}</Link>
                         {c.notes && <p style={{ fontSize: '0.72rem', color: 'var(--fg-4)' }}>{c.notes.substring(0, 40)}</p>}
                       </div>
                     </div>

@@ -19,6 +19,8 @@ export async function GET(req: NextRequest) {
   query = query.eq('is_demo', !!user.isDemo)
   if (status) query = query.eq('status', status)
   if (search) query = query.ilike('quote_number', `%${search}%`)
+  const customerId = searchParams.get('customerId')
+  if (customerId) query = query.eq('customer_id', customerId)
 
   const { data, error } = await query
   if (error) return Response.json({ success: false, message: error.message }, { status: 500 })
@@ -38,9 +40,14 @@ export async function POST(req: NextRequest) {
 
   const parsedItems: any[] = Array.isArray(items) ? items : []
   const subtotal = parsedItems.reduce((s: number, i: any) => s + (Number(i.qty || 1) * Number(i.price || 0)), 0)
+  const discountType = body.discountType === 'percent' || body.discountType === 'fixed' ? body.discountType : 'none'
+  const discountValue = Number(body.discountValue || 0)
+  const discountAmount = discountType === 'percent' ? subtotal * (discountValue / 100)
+    : discountType === 'fixed' ? Math.min(discountValue, subtotal) : 0
+  const taxable = subtotal - discountAmount
   const tr = Number(taxRate || 0)
-  const taxAmount = subtotal * (tr / 100)
-  const total = subtotal + taxAmount
+  const taxAmount = taxable * (tr / 100)
+  const total = taxable + taxAmount
 
   const { data, error } = await supabase.from('quotations').insert({
     quote_number: quoteNumber,
@@ -50,6 +57,8 @@ export async function POST(req: NextRequest) {
     currency: currency || 'SAR',
     items: parsedItems,
     subtotal,
+    discount_type: discountType,
+    discount_value: discountValue,
     tax_rate: tr,
     tax_amount: taxAmount,
     total,

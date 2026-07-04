@@ -36,6 +36,10 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
               { href: '/portal',          label: t.dashboard  || 'Dashboard' },
               { href: '/portal/projects', label: t.projects   || 'Projects' },
               { href: '/portal/invoices', label: t.invoices   || 'Invoices' },
+              { href: '/portal/quotes',    label: lang === 'ar' ? 'عروض الأسعار' : 'Quotations' },
+              { href: '/portal/contracts', label: lang === 'ar' ? 'عقودي' : 'Contracts' },
+              { href: '/portal/files',     label: lang === 'ar' ? 'الملفات' : 'Files' },
+              { href: '/portal/activity',  label: lang === 'ar' ? 'النشاط' : 'Activity' },
             ].map(item => (
               <Link key={item.href} href={item.href} style={{
                 padding: '0.3rem 0.65rem',

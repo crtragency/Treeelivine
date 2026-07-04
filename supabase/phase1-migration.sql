@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS leads (
                     CHECK (source IN ('website','referral','social','ads','cold_call','event','other')),
   stage           TEXT NOT NULL DEFAULT 'new'
                     CHECK (stage IN ('new','contacted','meeting_scheduled','proposal_sent','negotiation','won','lost')),
-  position        INTEGER DEFAULT 0,           -- ordering inside a Kanban column
+  position        BIGINT DEFAULT 0,            -- ordering inside a Kanban column
   score           INTEGER DEFAULT 0 CHECK (score BETWEEN 0 AND 100),
   expected_value  NUMERIC DEFAULT 0,
   currency        TEXT DEFAULT 'SAR',
@@ -53,6 +53,8 @@ CREATE TABLE IF NOT EXISTS leads (
   created_at      TIMESTAMPTZ DEFAULT NOW(),
   updated_at      TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE leads ALTER COLUMN position TYPE BIGINT;
 
 CREATE INDEX IF NOT EXISTS idx_leads_stage       ON leads(stage, position);
 CREATE INDEX IF NOT EXISTS idx_leads_assigned    ON leads(assigned_to);
@@ -234,3 +236,31 @@ ALTER TABLE notes        DISABLE ROW LEVEL SECURITY;
 ALTER TABLE attachments  DISABLE ROW LEVEL SECURITY;
 ALTER TABLE contracts    DISABLE ROW LEVEL SECURITY;
 ALTER TABLE time_entries DISABLE ROW LEVEL SECURITY;
+
+-- ─────────────────────────────────────────
+-- 12. Permission keys for the new modules
+--     (appends to settings.roles; idempotent)
+-- ─────────────────────────────────────────
+UPDATE settings SET roles = (
+  SELECT jsonb_agg(
+    jsonb_set(r, '{permissions}', (
+      SELECT to_jsonb(ARRAY(SELECT DISTINCT p FROM unnest(
+        ARRAY(SELECT jsonb_array_elements_text(r->'permissions'))
+        ||
+        CASE r->>'role'
+          WHEN 'admin'   THEN ARRAY['leads.read','leads.write','contracts.read','contracts.write','time.read','time.write','time.reports','files.read','files.write']
+          WHEN 'manager' THEN ARRAY['leads.read','leads.write','contracts.read','contracts.write','time.read','time.reports','files.read','files.write']
+          WHEN 'team'    THEN ARRAY['leads.read','time.read','time.write','files.read','files.write']
+          WHEN 'finance' THEN ARRAY['contracts.read','time.reports','files.read']
+          WHEN 'viewer'  THEN ARRAY['leads.read','contracts.read','files.read']
+          ELSE ARRAY[]::TEXT[]
+        END
+      ) AS p ORDER BY p))
+    ))
+  ) FROM jsonb_array_elements(roles) r
+)
+WHERE roles IS NOT NULL AND jsonb_typeof(roles) = 'array';
+
+-- NOTE: for attachments, create a private Storage bucket named
+-- 'attachments' in Supabase (Dashboard → Storage → New bucket, private).
+-- Downloads are streamed through /api/attachments/[id] with auth checks.

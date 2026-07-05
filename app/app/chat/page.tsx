@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useApp } from '@/contexts/AppContext'
 import Modal from '@/components/ui/Modal'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { playMessageSound } from '@/lib/sound'
 
 const QUICK_EMOJI = ['👍', '❤️', '😂', '🎉', '👀', '✅']
 
@@ -17,7 +18,6 @@ export default function ChatPage() {
   const [loadingChannels, setLoadingChannels] = useState(true)
   const [loadingThread, setLoadingThread] = useState(false)
   const [body, setBody] = useState('')
-  const [sending, setSending] = useState(false)
   const [newModal, setNewModal] = useState(false)
   const [users, setUsers] = useState<any[]>([])
   const [newType, setNewType] = useState<'dm' | 'team'>('dm')
@@ -28,6 +28,8 @@ export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const activeRef = useRef<any>(null)
   activeRef.current = active
+  const userRef = useRef<string | undefined>(undefined)
+  userRef.current = user?._id
 
   const fetchChannels = useCallback(async () => {
     const res = await fetch('/api/chat/channels').then(r => r.json())
@@ -40,8 +42,15 @@ export default function ChatPage() {
     const res = await fetch(`/api/chat/channels/${channelId}/messages`).then(r => r.json())
     if (res.success && activeRef.current?._id === channelId) {
       setMessages(prev => {
-        const same = prev.length === res.data.length && prev[prev.length - 1]?._id === res.data[res.data.length - 1]?._id
-        return same ? prev : res.data
+        // keep optimistic (still-sending) messages out of the comparison
+        const settled = prev.filter(m => !m.pending)
+        const same = settled.length === res.data.length && settled[settled.length - 1]?._id === res.data[res.data.length - 1]?._id
+        if (same) return prev
+        // blip when someone else's new message lands in the open thread
+        const known = new Set(settled.map((m: any) => m._id))
+        const incoming = res.data.some((m: any) => !known.has(m._id) && m.authorId !== userRef.current)
+        if (incoming) playMessageSound()
+        return [...res.data, ...prev.filter(m => m.pending)]
       })
       if (markRead) {
         fetch(`/api/chat/channels/${channelId}/read`, { method: 'PUT' }).catch(() => {})
@@ -77,22 +86,41 @@ export default function ChatPage() {
   }
 
   async function send() {
-    if (!body.trim() || sending || !active) return
-    setSending(true)
+    if (!body.trim() || !active) return
+    const text = body
+    const channelId = active._id
     // @mentions: match member names typed as @name
     const mentions = (active.members || [])
-      .filter((m: any) => m.id !== user?._id && body.includes(`@${m.name}`))
+      .filter((m: any) => m.id !== user?._id && text.includes(`@${m.name}`))
       .map((m: any) => m.id)
-    const res = await fetch(`/api/chat/channels/${active._id}/messages`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ body, mentions }),
-    }).then(r => r.json())
-    if (res.success) {
-      setBody('')
-      setMessages(prev => [...prev, res.data])
-      fetchChannels()
-    } else alert(res.message)
-    setSending(false)
+
+    // optimistic: show the message instantly, reconcile with the server reply
+    const temp = {
+      _id: `tmp-${Date.now()}`, channelId, authorId: user?._id,
+      authorName: user?.name || user?.email, body: text,
+      createdAt: new Date().toISOString(), reactions: [], mentions, pending: true,
+    }
+    setBody('')
+    setMessages(prev => [...prev, temp])
+    setChannels(prev => prev.map(c => c._id === channelId
+      ? { ...c, lastMessage: { body: text, authorName: temp.authorName, createdAt: temp.createdAt } } : c))
+
+    try {
+      const res = await fetch(`/api/chat/channels/${channelId}/messages`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body: text, mentions }),
+      }).then(r => r.json())
+      if (res.success) {
+        setMessages(prev => prev.map(m => m._id === temp._id ? res.data : m))
+      } else {
+        setMessages(prev => prev.filter(m => m._id !== temp._id))
+        setBody(text)
+        alert(res.message)
+      }
+    } catch {
+      setMessages(prev => prev.filter(m => m._id !== temp._id))
+      setBody(text)
+    }
   }
 
   async function toggleReaction(msgId: string, emoji: string) {
@@ -195,6 +223,7 @@ export default function ChatPage() {
                         color: mine ? '#fff' : 'var(--fg-1)',
                         border: mine ? 'none' : '1px solid var(--border-1)',
                         borderRadius: 12, padding: '0.5rem 0.8rem', cursor: 'default',
+                        opacity: m.pending ? 0.6 : 1, transition: 'opacity 150ms',
                       }}>
                         {!mine && <p style={{ fontSize: '0.68rem', fontWeight: 700, opacity: 0.8, marginBottom: 2 }}>{m.authorName}</p>}
                         <p style={{ fontSize: '0.84rem', lineHeight: 1.55, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{m.body}</p>
@@ -229,7 +258,7 @@ export default function ChatPage() {
                   onChange={e => setBody(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
                   style={{ flex: 1 }} />
-                <button className="btn btn-primary" onClick={send} disabled={sending || !body.trim()}>{sending ? '…' : t['chat.send']}</button>
+                <button className="btn btn-primary" onClick={send} disabled={!body.trim()}>{t['chat.send']}</button>
               </div>
             </>
           )}

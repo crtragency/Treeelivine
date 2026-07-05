@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/contexts/AppContext'
+import { playNotificationSound } from '@/lib/sound'
 
 const TYPE_ICONS: Record<string, string> = {
   mention: '💬', task_assigned: '📋', task_due: '⏰', contract_expiring: '📄',
@@ -16,22 +17,39 @@ export default function NotificationBell({ allHref = '/app/notifications' }: { a
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [soundOn, setSoundOn] = useState(true)
   const wrapRef = useRef<HTMLDivElement>(null)
+  const prevUnread = useRef<number | null>(null)
   const isAr = lang === 'ar'
 
   const fetchCount = useCallback(async () => {
     if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return
     try {
       const res = await fetch('/api/notifications?count=1').then(r => r.json())
-      if (res.success) setUnread(res.data.unread)
+      if (res.success) {
+        // chime when something new arrives (not on the very first load)
+        if (prevUnread.current !== null && res.data.unread > prevUnread.current) {
+          playNotificationSound()
+        }
+        prevUnread.current = res.data.unread
+        setUnread(res.data.unread)
+      }
     } catch { /* offline — keep last count */ }
   }, [])
 
   useEffect(() => {
+    setSoundOn(localStorage.getItem('notifSound') !== 'off')
     fetchCount()
     const iv = setInterval(fetchCount, 8000)
     return () => clearInterval(iv)
   }, [fetchCount])
+
+  function toggleSound() {
+    const next = !soundOn
+    setSoundOn(next)
+    localStorage.setItem('notifSound', next ? 'on' : 'off')
+    if (next) playNotificationSound() // preview + unlocks audio on this gesture
+  }
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -57,6 +75,7 @@ export default function NotificationBell({ allHref = '/app/notifications' }: { a
     setOpen(false)
     if (!n.readAt) {
       setUnread(u => Math.max(0, u - 1))
+      if (prevUnread.current !== null) prevUnread.current = Math.max(0, prevUnread.current - 1)
       fetch(`/api/notifications/${n._id}`, { method: 'PUT' }).catch(() => {})
     }
     if (n.link) router.push(n.link)
@@ -64,6 +83,7 @@ export default function NotificationBell({ allHref = '/app/notifications' }: { a
 
   async function markAllRead() {
     setUnread(0)
+    prevUnread.current = 0
     setItems(prev => prev.map(n => ({ ...n, readAt: n.readAt || new Date().toISOString() })))
     await fetch('/api/notifications', { method: 'PUT' }).catch(() => {})
   }
@@ -100,7 +120,13 @@ export default function NotificationBell({ allHref = '/app/notifications' }: { a
           overflow: 'hidden',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', borderBottom: '1px solid var(--border-1)' }}>
-            <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{t['notif.title'] || 'Notifications'}</span>
+            <span style={{ fontWeight: 600, fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+              {t['notif.title'] || 'Notifications'}
+              <button onClick={toggleSound} title={soundOn ? (t['notif.soundOff'] || 'Mute') : (t['notif.soundOn'] || 'Unmute')}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', lineHeight: 1, padding: 2, opacity: soundOn ? 1 : 0.45 }}>
+                {soundOn ? '🔊' : '🔇'}
+              </button>
+            </span>
             {unread > 0 && (
               <button onClick={markAllRead} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 500 }}>
                 {t['notif.markAllRead'] || 'Mark all read'}

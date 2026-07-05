@@ -37,6 +37,23 @@ export function getEffectivePermissions(user: any, settings: any): string[] {
   return perms
 }
 
+// Settings change rarely but are read on every authenticated request —
+// cache the row per server instance for a short window.
+const SETTINGS_TTL_MS = 30_000
+let _settingsCache: { data: any; at: number } | null = null
+
+async function getSettingsRow() {
+  if (_settingsCache && Date.now() - _settingsCache.at < SETTINGS_TTL_MS) return _settingsCache.data
+  const { data } = await supabase.from('settings').select('*').limit(1).single()
+  _settingsCache = { data, at: Date.now() }
+  return data
+}
+
+/** Call after mutating the settings row so permissions apply immediately. */
+export function invalidateSettingsCache() {
+  _settingsCache = null
+}
+
 export async function getAuthUser(req?: NextRequest) {
   try {
     let token: string | undefined
@@ -50,15 +67,12 @@ export async function getAuthUser(req?: NextRequest) {
 
     const decoded = verifyToken(token)
 
-    const { data: user } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', decoded.userId)
-      .single()
+    const [{ data: user }, settingsRow] = await Promise.all([
+      supabase.from('users').select('*').eq('id', decoded.userId).single(),
+      getSettingsRow(),
+    ])
 
     if (!user || !user.is_active) return null
-
-    const { data: settingsRow } = await supabase.from('settings').select('*').limit(1).single()
     const settings = settingsRow ? {
       roles: settingsRow.roles,
       permissions: settingsRow.permissions,

@@ -25,13 +25,33 @@ export default function TicketThread({ ticketId, staff = false }: { ticketId: st
 
   async function send() {
     if (!body.trim() || sending) return
+    const text = body
+    const isInternal = staff && internal
+    // optimistic: show the reply instantly, reconcile with the server row
+    const temp = {
+      _id: `tmp-${Date.now()}`, ticketId, authorId: user?._id,
+      authorName: user?.name || user?.email, body: text,
+      internal: isInternal, createdAt: new Date().toISOString(), pending: true,
+    }
+    setBody('')
     setSending(true)
-    const res = await fetch(`/api/tickets/${ticketId}/messages`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ body, internal: staff && internal }),
-    }).then(r => r.json())
-    if (res.success) { setBody(''); await load() }
-    else alert(res.message)
+    setMessages(prev => [...prev, temp])
+    try {
+      const res = await fetch(`/api/tickets/${ticketId}/messages`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body: text, internal: isInternal }),
+      }).then(r => r.json())
+      if (res.success) {
+        setMessages(prev => prev.map(m => m._id === temp._id ? res.data : m))
+      } else {
+        setMessages(prev => prev.filter(m => m._id !== temp._id))
+        setBody(text)
+        alert(res.message)
+      }
+    } catch {
+      setMessages(prev => prev.filter(m => m._id !== temp._id))
+      setBody(text)
+    }
     setSending(false)
   }
 
@@ -51,6 +71,7 @@ export default function TicketThread({ ticketId, staff = false }: { ticketId: st
               color: m.internal ? 'var(--fg-1)' : mine ? '#fff' : 'var(--fg-1)',
               borderRadius: 10, padding: '0.5rem 0.75rem',
               border: m.internal ? '1px dashed var(--warning-600, #d97706)' : '1px solid var(--border-1)',
+              opacity: m.pending ? 0.6 : 1, transition: 'opacity 150ms',
             }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', marginBottom: 2 }}>
                 <span style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.85 }}>{m.authorName || '—'}</span>

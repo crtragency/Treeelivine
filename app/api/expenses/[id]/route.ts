@@ -29,6 +29,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (body.date !== undefined) updates.date = body.date
   if (body.employeeId !== undefined) updates.employee_id = body.employeeId
   if (body.employee_id !== undefined) updates.employee_id = body.employee_id
+  if (body.projectId !== undefined) updates.project_id = body.projectId || null
   if (body.isRecurringSalary !== undefined) updates.is_recurring_salary = body.isRecurringSalary
   if (body.salaryNextDueDate !== undefined) updates.salary_next_due_date = body.salaryNextDueDate
 

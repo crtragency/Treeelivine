@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
     amount: body.amount,
     date: body.date || new Date().toISOString(),
     employee_id: body.employeeId || body.employee_id || null,
+    project_id: body.projectId || body.project_id || null,
     is_recurring_salary: body.isRecurringSalary || body.is_recurring_salary || false,
     salary_next_due_date: body.salaryNextDueDate || body.salary_next_due_date || null,
   }).select().single()

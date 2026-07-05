@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useApp } from '@/contexts/AppContext'
+import NotificationBell from '@/components/ui/NotificationBell'
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout, t, lang, setLang } = useApp()
@@ -39,6 +40,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
               { href: '/portal/quotes',    label: lang === 'ar' ? 'عروض الأسعار' : 'Quotations' },
               { href: '/portal/contracts', label: lang === 'ar' ? 'عقودي' : 'Contracts' },
               { href: '/portal/files',     label: lang === 'ar' ? 'الملفات' : 'Files' },
+              { href: '/portal/support',   label: lang === 'ar' ? 'الدعم' : 'Support' },
               { href: '/portal/activity',  label: lang === 'ar' ? 'النشاط' : 'Activity' },
             ].map(item => (
               <Link key={item.href} href={item.href} style={{
@@ -53,6 +55,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           </nav>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <NotificationBell allHref="" />
           <span style={{ fontSize: '0.8125rem', color: 'var(--fg-4)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name || user.email}</span>
           <button className="btn btn-secondary btn-sm" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>{lang === 'ar' ? 'EN' : 'AR'}</button>
           <button className="btn btn-secondary btn-sm" onClick={logout}>{lang === 'ar' ? 'خروج' : 'Logout'}</button>

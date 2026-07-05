@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { getAuthUser, hasPermission, unauthorizedResponse, forbiddenResponse, demoReadOnlyResponse } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
+import { toApi } from '@/lib/utils'
 
 /** True when this client user owns the entity the attachment hangs off. */
 async function clientOwnsAttachment(userId: string, att: any): Promise<boolean> {
@@ -46,6 +47,26 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(att.file_name)}`,
     },
   })
+}
+
+/** Update DAM metadata: tags, folder, client visibility. */
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  const user = await getAuthUser(req)
+  if (!user) return unauthorizedResponse()
+  if (user.role === 'client') return forbiddenResponse()
+  if (!hasPermission(user, 'files.write')) return forbiddenResponse()
+  if (user.isDemo) return demoReadOnlyResponse()
+
+  const body = await req.json()
+  const updates: any = {}
+  if (body.tags !== undefined) updates.tags = Array.isArray(body.tags) ? body.tags.map((s: string) => String(s).trim()).filter(Boolean) : []
+  if (body.folderId !== undefined) updates.folder_id = body.folderId || null
+  if (body.clientVisible !== undefined) updates.client_visible = !!body.clientVisible
+  if (!Object.keys(updates).length) return Response.json({ success: false, message: 'Nothing to update' }, { status: 400 })
+
+  const { data, error } = await supabase.from('attachments').update(updates).eq('id', params.id).select().single()
+  if (error || !data) return Response.json({ success: false, message: error?.message || 'Not found' }, { status: error ? 500 : 404 })
+  return Response.json({ success: true, data: toApi(data) })
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {

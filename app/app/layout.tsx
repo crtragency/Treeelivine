@@ -4,6 +4,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useApp } from '@/contexts/AppContext'
 import TimerBar from '@/components/ui/TimerBar'
+import NotificationBell from '@/components/ui/NotificationBell'
 
 /* ── Lucide-style SVG icons (inline, no dep needed) ─────────────────── */
 function Icon({ d, size = 16 }: { d: string | string[]; size?: number }) {
@@ -38,6 +39,11 @@ const Icons = {
   TrendUp:   () => <Icon d={['M23 6l-9.5 9.5-5-5L1 18', 'M17 6h6v6']} />,
   Briefcase: () => <Icon d={['M20 7H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z', 'M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2']} />,
   Clock:     () => <Icon d={['M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z', 'M12 6v6l4 2']} />,
+  FileSign:  () => <Icon d={['M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z', 'M14 2v6h6', 'M8 16l2-2 1.5 1.5L15 12']} />,
+  Chat:      () => <Icon d={['M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z']} />,
+  Gauge:     () => <Icon d={['M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z', 'M12 12l4-4', 'M8 12h.01M12 8v.01M16 12h.01']} />,
+  Layers:    () => <Icon d={['M12 2L2 7l10 5 10-5-10-5z', 'M2 17l10 5 10-5', 'M2 12l10 5 10-5']} />,
+  FolderOpen:() => <Icon d={['M6 14l1.5-5h13L19 14a2 2 0 01-2 1.5H8A2 2 0 016 14z', 'M4 15V5a2 2 0 012-2h4l2 3h7a2 2 0 012 2v1']} />,
 }
 
 /* ── Brand logo image ────────────────────────────────────────────────── */
@@ -60,16 +66,21 @@ const NAV_SECTIONS = [
       { href: '/app/clients',          labelAr: 'العملاء',         labelEn: 'Clients',           Icon: Icons.Users,     perm: 'crm.read' },
       { href: '/app/quotations',       labelAr: 'عروض الأسعار',    labelEn: 'Quotations',        Icon: Icons.Clipboard, perm: 'finance.read' },
       { href: '/app/invoices',         labelAr: 'الفواتير',        labelEn: 'Invoices',          Icon: Icons.Receipt,   perm: 'finance.read' },
+      { href: '/app/contracts',        labelAr: 'العقود',          labelEn: 'Contracts',         Icon: Icons.FileSign,  perm: 'contracts.read' },
+      { href: '/app/chat',             labelAr: 'المحادثات',       labelEn: 'Chat',              Icon: Icons.Chat,      perm: 'chat.use' },
     ],
   },
   {
     label: { ar: 'الإدارة', en: 'Management' },
     items: [
       { href: '/app/financial',        labelAr: 'المالية',         labelEn: 'Financial',         Icon: Icons.TrendUp,   perm: 'finance.read' },
+      { href: '/app/profitability',    labelAr: 'الربحية',         labelEn: 'Profitability',     Icon: Icons.Gauge,     perm: 'profitability.read' },
       { href: '/app/hr-payroll',       labelAr: 'الموارد البشرية', labelEn: 'HR & Payroll',      Icon: Icons.Briefcase, perm: 'team.read' },
       { href: '/app/team',             labelAr: 'الفريق',          labelEn: 'Team',              Icon: Icons.Building,  perm: 'team.read' },
+      { href: '/app/resources',        labelAr: 'تخطيط الموارد',   labelEn: 'Resources',         Icon: Icons.Layers,    perm: 'resources.read' },
       { href: '/app/tasks',            labelAr: 'المهام',          labelEn: 'Tasks',             Icon: Icons.CheckSq,   perm: 'tasks.read' },
       { href: '/app/time',             labelAr: 'تتبع الوقت',      labelEn: 'Time Tracking',     Icon: Icons.Clock,     perm: 'time.read' },
+      { href: '/app/files',            labelAr: 'مكتبة الملفات',   labelEn: 'Files',             Icon: Icons.FolderOpen, perm: 'dam.read' },
     ],
   },
   {
@@ -212,9 +223,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             >
               {theme === 'dark' ? <Icons.Sun /> : <Icons.Moon />}
             </button>
-            <button className="iconbtn" title={isAr ? 'الإشعارات' : 'Notifications'}>
-              <Icons.Bell />
-            </button>
+            <NotificationBell />
             <div style={{ width: 1, height: 20, background: 'var(--border-1)', margin: '0 var(--space-1)' }} />
             <div className="av av-md" style={{ cursor: 'default' }}>{initials}</div>
           </div>

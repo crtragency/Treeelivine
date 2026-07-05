@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { getAuthUser, hasPermission, unauthorizedResponse } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 import { syncRecurringSalaryExpenses } from '@/lib/salary-sync'
+import { checkContractExpiry } from '@/lib/contract-sweep'
 
 function rangeStart(range: string): Date | null {
   const now = new Date()
@@ -20,6 +21,7 @@ export async function GET(req: NextRequest) {
   if (!user) return unauthorizedResponse()
 
   await syncRecurringSalaryExpenses()
+  await checkContractExpiry()
 
   const { searchParams } = new URL(req.url)
   const start = rangeStart(searchParams.get('range') || '30d')

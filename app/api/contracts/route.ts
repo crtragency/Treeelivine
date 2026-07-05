@@ -52,6 +52,9 @@ export async function POST(req: NextRequest) {
     start_date: body.startDate || null,
     end_date: body.endDate || null,
     body: body.body || null,
+    template_id: body.templateId || null,
+    auto_renew: !!body.autoRenew,
+    renewal_reminder_days: body.renewalReminderDays ?? 30,
   }).select('*, customer:customers(id,name,company)').single()
   if (error) return Response.json({ success: false, message: error.message }, { status: 500 })
 

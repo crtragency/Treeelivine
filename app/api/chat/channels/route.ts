@@ -29,28 +29,37 @@ export async function GET(req: NextRequest) {
     })
   }
 
-  const result = await Promise.all((channels || []).map(async ch => {
-    const readAt = lastRead.get(ch.id) || new Date(0).toISOString()
-    const [{ count: unread }, { data: lastMsgs }] = await Promise.all([
-      supabase.from('messages').select('*', { count: 'exact', head: true })
-        .eq('channel_id', ch.id).gt('created_at', readAt).neq('author_id', user.id),
-      supabase.from('messages').select('body, author_name, created_at')
-        .eq('channel_id', ch.id).order('created_at', { ascending: false }).limit(1),
-    ])
+  // one query for unread counts + previews across all channels (no N+1):
+  // recent messages are enough — unread badges cap out visually anyway
+  const { data: recent } = await supabase.from('messages')
+    .select('channel_id, author_id, author_name, body, created_at')
+    .in('channel_id', ids).order('created_at', { ascending: false }).limit(400)
+
+  const lastByChannel = new Map<string, any>()
+  const unreadByChannel = new Map<string, number>()
+  for (const m of recent || []) {
+    if (!lastByChannel.has(m.channel_id)) lastByChannel.set(m.channel_id, m)
+    const readAt = lastRead.get(m.channel_id) || new Date(0).toISOString()
+    if (m.created_at > readAt && m.author_id !== user.id) {
+      unreadByChannel.set(m.channel_id, (unreadByChannel.get(m.channel_id) || 0) + 1)
+    }
+  }
+
+  const result = (channels || []).map(ch => {
     const members = membersByChannel.get(ch.id) || []
     const others = members.filter(m => m.id !== user.id)
     const name = ch.type === 'dm'
       ? (others[0]?.name || '—')
       : ch.type === 'project' ? ((ch as any).project?.name || ch.name || '—') : (ch.name || '—')
-    const last = lastMsgs?.[0]
+    const last = lastByChannel.get(ch.id)
     return {
       _id: ch.id, id: ch.id, type: ch.type, name,
       projectId: ch.project_id || null,
       members,
-      unread: unread || 0,
+      unread: unreadByChannel.get(ch.id) || 0,
       lastMessage: last ? { body: last.body, authorName: last.author_name, createdAt: last.created_at } : null,
     }
-  }))
+  })
 
   result.sort((a, b) => (b.lastMessage?.createdAt || '').localeCompare(a.lastMessage?.createdAt || ''))
   return Response.json({ success: true, data: result })

@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { getAuthUser, hasPermission, unauthorizedResponse, forbiddenResponse } from '@/lib/auth'
+import { getAuthUser, hasPermission, unauthorizedResponse, forbiddenResponse, invalidateSettingsCache } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 
 export async function GET(req: NextRequest) {
@@ -21,5 +21,6 @@ export async function PUT(req: NextRequest) {
 
   const { data, error } = await supabase.from('settings').update({ currencies }).eq('id', settings.id).select('currencies').single()
   if (error) return Response.json({ success: false, message: error.message }, { status: 500 })
+  invalidateSettingsCache()
   return Response.json({ success: true, data: data?.currencies })
 }

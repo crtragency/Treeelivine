@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { getAuthUser, hasPermission, unauthorizedResponse, forbiddenResponse, demoReadOnlyResponse } from '@/lib/auth'
+import { getAuthUser, hasPermission, unauthorizedResponse, forbiddenResponse, demoReadOnlyResponse, invalidateSettingsCache } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 
 async function getOrCreateSettings() {
@@ -57,5 +57,6 @@ export async function PUT(req: NextRequest) {
 
   const { data, error } = await supabase.from('settings').update(updates).eq('id', settings.id).select().single()
   if (error) return Response.json({ success: false, message: error.message }, { status: 500 })
+  invalidateSettingsCache()
   return Response.json({ success: true, data: settingsToApi(data) })
 }

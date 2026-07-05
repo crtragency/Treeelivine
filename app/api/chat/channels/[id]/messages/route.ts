@@ -75,23 +75,28 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }).select().single()
   if (error) return Response.json({ success: false, message: error.message }, { status: 500 })
 
-  // sender has obviously read up to their own message
-  await supabase.from('channel_members').update({ last_read_at: new Date().toISOString() })
-    .eq('channel_id', params.id).eq('user_id', user.id)
-
+  // side effects run in parallel — the sender shouldn't wait on fan-out
   const preview = (body.body || '').slice(0, 120)
+  const [, { data: ch }, { data: members }] = await Promise.all([
+    // sender has obviously read up to their own message
+    supabase.from('channel_members').update({ last_read_at: new Date().toISOString() })
+      .eq('channel_id', params.id).eq('user_id', user.id),
+    supabase.from('channels').select('type').eq('id', params.id).single(),
+    supabase.from('channel_members').select('user_id').eq('channel_id', params.id),
+  ])
+
+  const notifJobs: Promise<void>[] = []
   if (mentions.length) {
-    await notify(mentions, 'mention', `${user.name || user.email} أشار إليك في محادثة`,
-      { body: preview, entityType: 'channel', entityId: params.id, link: '/app/chat', isDemo: !!user.isDemo, excludeUserId: user.id })
+    notifJobs.push(notify(mentions, 'mention', `${user.name || user.email} أشار إليك في محادثة`,
+      { body: preview, entityType: 'channel', entityId: params.id, link: '/app/chat', isDemo: !!user.isDemo, excludeUserId: user.id }))
   }
   // DMs also ping the other side (mentions already covered above)
-  const { data: ch } = await supabase.from('channels').select('type').eq('id', params.id).single()
   if (ch?.type === 'dm') {
-    const { data: members } = await supabase.from('channel_members').select('user_id').eq('channel_id', params.id)
     const others = (members || []).map(m => m.user_id).filter(id => id !== user.id && !mentions.includes(id))
-    await notify(others, 'chat_message', `رسالة جديدة من ${user.name || user.email}`,
-      { body: preview, entityType: 'channel', entityId: params.id, link: '/app/chat', isDemo: !!user.isDemo })
+    notifJobs.push(notify(others, 'chat_message', `رسالة جديدة من ${user.name || user.email}`,
+      { body: preview, entityType: 'channel', entityId: params.id, link: '/app/chat', isDemo: !!user.isDemo }))
   }
+  if (notifJobs.length) await Promise.all(notifJobs)
 
   return Response.json({ success: true, data: { ...toApi(data), reactions: [] } }, { status: 201 })
 }

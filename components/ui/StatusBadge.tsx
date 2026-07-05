@@ -16,6 +16,11 @@ const STATUS_KIND: Record<string, string> = {
   draft: 'draft', sent: 'info', accepted: 'active', expired: 'draft',
   // tickets
   open: 'info', resolved: 'active', closed: 'draft',
+  waiting_client: 'pending', escalated: 'blocked',
+  // contracts
+  pending_approval: 'pending', signed: 'active', renewed: 'info',
+  // vacations
+  vacation: 'info', sick: 'pending', unpaid_leave: 'draft',
   // priority
   urgent: 'blocked', high: 'blocked', medium: 'pending', low: 'draft',
 }

@@ -37,6 +37,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (body.startDate !== undefined) updates.start_date = body.startDate || null
   if (body.endDate !== undefined) updates.end_date = body.endDate || null
   if (body.body !== undefined) updates.body = body.body
+  if (body.templateId !== undefined) updates.template_id = body.templateId || null
+  if (body.autoRenew !== undefined) updates.auto_renew = !!body.autoRenew
+  if (body.renewalReminderDays !== undefined) updates.renewal_reminder_days = body.renewalReminderDays
   if (body.status !== undefined) {
     updates.status = body.status
     if (body.status === 'signed') {

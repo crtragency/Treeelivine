@@ -266,7 +266,7 @@ BEGIN
       entity_id    UUID NOT NULL,
       chunk_index  INTEGER DEFAULT 0,
       content      TEXT NOT NULL,          -- the chunk that was embedded (shown as citation)
-      embedding    vector(1024),           -- voyage-3.5 dims
+      embedding    vector(768),            -- gemini-embedding-001 @ outputDimensionality 768
       is_demo      BOOLEAN DEFAULT false,
       created_at   TIMESTAMPTZ DEFAULT NOW(),
       UNIQUE (entity_type, entity_id, chunk_index)

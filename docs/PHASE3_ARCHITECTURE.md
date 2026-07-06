@@ -21,34 +21,53 @@ creates the `embeddings` table only where the `vector` extension exists
 
 ## 0. AI platform layer (`lib/ai.ts`) — one gateway, every feature uses it
 
-- **SDK:** `@anthropic-ai/sdk` (official TypeScript SDK), server-side only,
-  key in `ANTHROPIC_API_KEY` (Vercel env). Never exposed to the browser.
-- **Model routing** (per feature, one place to change):
+**Provider: Google Gemini API — 100% free tier, no credit card.** The key
+comes from Google AI Studio (https://aistudio.google.com/apikey — sign in
+with any Google account → "Create API key"). The free tier covers chat,
+tool use, structured JSON output, streaming, **embeddings** and **native
+audio understanding**, which removes two paid dependencies at once (no
+separate embeddings provider, no separate transcription provider).
 
-  | Tier | Model | Used by |
-  |---|---|---|
-  | `smart` | `claude-opus-4-8` | assistant, proposals, project plans, reports, meeting summaries, executive brief |
-  | `fast` | `claude-haiku-4-5` | insight recommendation texts, conversation titles, classification |
+- **Transport:** plain `fetch` to the Gemini REST API
+  (`generativelanguage.googleapis.com/v1beta/...:generateContent` /
+  `:streamGenerateContent?alt=sse`) — zero new npm dependencies. Key in
+  `GEMINI_API_KEY` (Vercel env), server-side only, never in the browser.
+- **Provider-agnostic gateway:** every feature calls
+  `aiChat/aiStream/aiJson/aiEmbed` from `lib/ai.ts`; nothing else touches
+  the HTTP layer. If a paid key (Anthropic/OpenAI) shows up later, only
+  `lib/ai.ts` changes.
+- **Model routing** (env-overridable, one place to change):
 
-- **Adaptive thinking** (`thinking: {type: "adaptive"}`) on the smart tier;
-  `output_config.effort` tuned per feature (`high` for plans/reports,
-  `medium` for chat). No `temperature`/`top_p` anywhere (removed on Opus 4.8).
-- **Streaming always** for the assistant (SSE via route handler
-  `ReadableStream`) — long outputs never hit function timeouts; Vercel
-  route config `maxDuration: 300`.
-- **Structured outputs** (`output_config.format` + JSON schema) for every
-  machine-consumed result: proposal JSON, project plan JSON, meeting summary
-  JSON, report narrative JSON. No regex-parsing of prose.
-- **Prompt caching:** the assistant's system prompt + tool definitions are
-  stable and marked `cache_control: {type: "ephemeral"}` — multi-turn chats
-  re-read the prefix at ~0.1× cost. Volatile context (user name, date,
-  language) is injected in the *user* turn, never the system prompt.
-- **Cost accounting:** every call logs `usage` (input/output/cache tokens ×
-  price table) into `ai_usage` — the Settings → AI panel shows spend per
-  feature/user/day, and a soft **daily token budget** (env
-  `AI_DAILY_BUDGET_USD`) makes the gateway refuse politely when exhausted.
-- **Language:** replies follow the caller's `lang` (ar/en) — one instruction
-  in the system prompt; all generated artifacts store `lang`.
+  | Tier | Default model | Free-tier limits* | Used by |
+  |---|---|---|---|
+  | `smart` | `gemini-2.5-flash` | ~10 req/min, ~250 req/day | assistant, proposals, project plans, reports, meeting summaries, executive brief |
+  | `fast` | `gemini-2.5-flash-lite` | ~15 req/min, ~1000 req/day | insight recommendation texts, conversation titles, classification |
+  | `embed` | `gemini-embedding-001` (768-dim) | generous free quota | RAG indexing + search |
+
+  *Limits change over time — the gateway reads them as soft config and
+  handles 429s with retry-after + a polite Arabic error. For an agency
+  team these daily quotas are far more than enough.
+- **Function calling:** Gemini `tools.functionDeclarations` +
+  `functionCall`/`functionResponse` turns drive the assistant loop —
+  same design, different wire format.
+- **Structured outputs:** `generationConfig.responseMimeType:
+  "application/json"` + `responseSchema` for every machine-consumed result
+  (proposal JSON, plan JSON, meeting summary JSON, report narrative JSON).
+  No regex-parsing of prose.
+- **Streaming always** for the assistant (`:streamGenerateContent?alt=sse`
+  piped through a route-handler `ReadableStream`); Vercel route config
+  `maxDuration: 300`.
+- **Audio natively:** Gemini accepts audio parts directly (inline base64
+  ≤20MB or via the free Files API) — meeting recordings are transcribed
+  and summarized in one call, free.
+- **Usage accounting:** every call logs `usageMetadata` token counts into
+  `ai_usage` (cost 0 on the free tier — the table future-proofs a paid
+  switch), plus a **daily request counter per tier** so the gateway
+  budgets itself under the free quotas (env `AI_DAILY_REQUEST_BUDGET`,
+  default 200 smart/day) and degrades politely when exhausted.
+- **Language:** replies follow the caller's `lang` (ar/en) — one
+  instruction in the system prompt; all generated artifacts store `lang`.
+  Gemini's Arabic quality is strong on both tiers.
 
 ## 1. AI Business Assistant (`/app/assistant`)
 
@@ -183,10 +202,11 @@ compares the stored `data` of the previous period's report.
 ## 7. AI Meeting Summaries (`/app/meetings`)
 
 Upload transcript text (v1) or audio (v1.1). Audio goes to storage and a
-`summarize_meeting` job transcribes it via a **transcription provider**
-(Claude doesn't transcribe audio — env-selected: OpenAI Whisper API or
-AssemblyAI, `TRANSCRIPTION_API_KEY`), then the smart tier extracts
-structured `{summary, decisions[], actionItems[{title, assigneeName,
+`summarize_meeting` job sends it **directly to Gemini** — the smart tier
+understands audio natively (inline base64 up to ~20MB, or the free Gemini
+Files API for bigger recordings), so transcription + extraction happen in
+one free call, no extra provider or key. Output is structured
+`{transcript?, summary, decisions[], actionItems[{title, assigneeName,
 due}], deadlines[]}` (schema-constrained, Arabic-aware). Review screen
 maps `assigneeName` → employees (fuzzy match, editable) and one click
 creates tasks + reminders (`tasks_created` flag). Linked to customer/
@@ -215,9 +235,10 @@ and the executive page. Statuses: open → acknowledged/resolved/dismissed.
 
 - **Store:** pgvector `embeddings` table — chunked text per entity
   (notes, ticket threads, meeting transcripts/summaries, contract bodies,
-  file names/tags, customer profiles), `vector(1024)`, HNSW cosine index.
-- **Embedder:** Voyage AI `voyage-3.5` (Anthropic-recommended;
-  `VOYAGE_API_KEY`) — Anthropic has no embeddings endpoint. Batched.
+  file names/tags, customer profiles), `vector(768)`, HNSW cosine index.
+- **Embedder:** Gemini `gemini-embedding-001` at 768 dimensions
+  (`outputDimensionality: 768`) — same free `GEMINI_API_KEY`, batched;
+  no extra provider or cost.
 - **Indexing:** `index_embeddings` jobs enqueued from the same routes that
   call `logActivity` (create/update of indexable entities); nightly
   reconcile job catches drift. Upsert on `(entity_type, entity_id,
@@ -342,9 +363,10 @@ the daily budget.
 
 - **Aggregated single-fetch endpoints** for executive/reports (same
   pattern as `resources`/`profitability`) — no client-side N+1.
-- **Prompt caching + model routing** keep AI cost/latency flat: stable
-  prefixes cached, haiku for high-volume small tasks, opus only where
-  quality pays.
+- **Model routing keeps the free quota healthy:** the lite tier absorbs
+  high-volume small tasks, the smart tier is reserved for generation that
+  needs quality; the gateway's per-tier daily counters throttle before
+  Google does, and 429s retry with backoff.
 - **Streaming everywhere** for perceived latency; optimistic UI already
   established in Phase 2 chat.
 - **DB-backed queue** with atomic claims scales horizontally with worker
@@ -370,10 +392,11 @@ the daily budget.
 7. Meeting Summaries (transcript v1 → audio v1.1)
 8. Client AI Assistant (portal toolset)
 9. Integrations Hub (Slack + Stripe + Google → Zoom → Meta/WhatsApp)
-10. RAG (`pgvector` + Voyage embeddings + `search_knowledge`) — last, the
+10. RAG (`pgvector` + Gemini embeddings + `search_knowledge`) — last, the
     assistant already works without it
 
-**New env vars:** `ANTHROPIC_API_KEY` (required),
-`CRON_SECRET`, `INTEGRATION_SECRET` (32-byte), `AI_DAILY_BUDGET_USD`
-(optional), `VOYAGE_API_KEY` + `TRANSCRIPTION_API_KEY` (when those
-features land), per-provider OAuth client ids/secrets.
+**New env vars:** `GEMINI_API_KEY` (required — free from
+https://aistudio.google.com/apikey, Google account only, no credit card),
+`CRON_SECRET`, `INTEGRATION_SECRET` (32-byte),
+`AI_DAILY_REQUEST_BUDGET` (optional), per-provider OAuth client
+ids/secrets (integrations only). **Everything AI runs at $0.**

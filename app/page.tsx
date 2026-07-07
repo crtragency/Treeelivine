@@ -43,9 +43,19 @@ function AnimatedWords({ text, baseDelay = 0 }: { text: string; baseDelay?: numb
 /* ── Feature card ─────────────────────────────────────────────────────── */
 const FeatureIcons: Record<string, React.ReactNode> = {
   crm:      <Ico d={['M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2','M23 21v-2a4 4 0 00-3-3.87','M16 3.13a4 4 0 010 7.75','M9 11a4 4 0 100-8 4 4 0 000 8z']} />,
+  pipeline: <Ico d={['M3 4h18l-7 8v6l-4 2v-8z']} />,
   projects: <Ico d={['M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z']} />,
   tasks:    <Ico d={['M9 11l3 3L22 4','M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11']} />,
   finance:  <Ico d={['M12 2v20','M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6']} />,
+  quotes:   <Ico d={['M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2','M9 2h6a1 1 0 011 1v3a1 1 0 01-1 1H9a1 1 0 01-1-1V3a1 1 0 011-1z','M9 14l2 2 4-4']} />,
+  contracts:<Ico d={['M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z','M14 2v6h6','M8 16l2-2 1.5 1.5L15 12']} />,
+  helpdesk: <Ico d={['M3 18v-6a9 9 0 0118 0v6','M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3z','M3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z']} />,
+  chat:     <Ico d={['M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z']} />,
+  resources:<Ico d={['M12 2L2 7l10 5 10-5-10-5z','M2 17l10 5 10-5','M2 12l10 5 10-5']} />,
+  profit:   <Ico d={['M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z','M12 12l4-4','M8 12h.01M12 8v.01M16 12h.01']} />,
+  time:     <Ico d={['M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z','M12 6v6l4 2']} />,
+  files:    <Ico d={['M6 14l1.5-5h13L19 14a2 2 0 01-2 1.5H8A2 2 0 016 14z','M4 15V5a2 2 0 012-2h4l2 3h7a2 2 0 012 2v1']} />,
+  notify:   <Ico d={['M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9','M13.73 21a2 2 0 01-3.46 0']} />,
   analytics:<Ico d={['M3 3v18h18','M18 9l-5 5-2-2-4 4']} />,
   roles:    <Ico d={['M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z']} />,
 }
@@ -75,6 +85,15 @@ const ModuleIcons: Record<string, React.ReactNode> = {
   templates: <Ico size={20} d={['M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z','M14 2v6h6','M16 13H8M16 17H8M10 9H8']} />,
   settings:  <Ico size={20} d={['M12 15a3 3 0 100-6 3 3 0 000 6z','M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z']} />,
   portal:    <Ico size={20} d={['M12 2a10 10 0 100 20A10 10 0 0012 2z','M2 12h20','M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z']} />,
+  leads:     <Ico size={20} d={['M3 4h18l-7 8v6l-4 2v-8z']} />,
+  quotes:    <Ico size={20} d={['M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2','M9 2h6a1 1 0 011 1v3a1 1 0 01-1 1H9a1 1 0 01-1-1V3a1 1 0 011-1z']} />,
+  contracts: <Ico size={20} d={['M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z','M14 2v6h6','M8 16l2-2 1.5 1.5L15 12']} />,
+  tickets:   <Ico size={20} d={['M3 18v-6a9 9 0 0118 0v6','M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3z','M3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z']} />,
+  chat:      <Ico size={20} d={['M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z']} />,
+  resources: <Ico size={20} d={['M12 2L2 7l10 5 10-5-10-5z','M2 17l10 5 10-5','M2 12l10 5 10-5']} />,
+  profit:    <Ico size={20} d={['M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z','M12 12l4-4']} />,
+  time:      <Ico size={20} d={['M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z','M12 6v6l4 2']} />,
+  files:     <Ico size={20} d={['M6 14l1.5-5h13L19 14a2 2 0 01-2 1.5H8A2 2 0 016 14z','M4 15V5a2 2 0 012-2h4l2 3h7a2 2 0 012 2v1']} />,
 }
 
 function ModuleBadge({ iconKey, name, desc }: { iconKey: string; name: string; desc: string }) {
@@ -122,6 +141,129 @@ function FAQItem({ q, a }: { q: string; a: string }) {
         <span style={{ color: 'var(--brand-primary)', fontSize: 18, fontWeight: 300, flexShrink: 0, transform: open ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }}>+</span>
       </button>
       {open && <div style={{ padding: '0 20px 16px', color: 'var(--fg-3)', fontSize: 13, lineHeight: 1.7 }}>{a}</div>}
+    </div>
+  )
+}
+
+/* ── Animated feature mockups (pure CSS, no images) ─────────────────── */
+function MockPipeline({ isAr }: { isAr: boolean }) {
+  const cols = [
+    { label: isAr ? 'محتمل' : 'Lead', cards: 2, tint: 'var(--brand-primary-soft)' },
+    { label: isAr ? 'تفاوض' : 'Talks', cards: 1, tint: 'rgba(47,107,191,0.12)' },
+    { label: isAr ? 'فوز 🎉' : 'Won 🎉', cards: 1, tint: 'rgba(47,138,62,0.12)' },
+  ]
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, height: '100%' }}>
+      {cols.map((c, ci) => (
+        <div key={ci} style={{ background: 'var(--bg-app)', borderRadius: 8, padding: 8, border: '1px solid var(--border-1)' }}>
+          <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--fg-3)', marginBottom: 6 }}>{c.label}</div>
+          {Array.from({ length: c.cards }).map((_, i) => (
+            <div key={i} style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-1)', borderRadius: 6, padding: '6px 7px', marginBottom: 6 }}>
+              <div style={{ height: 5, width: '70%', borderRadius: 3, background: c.tint, marginBottom: 4 }} />
+              <div style={{ height: 4, width: '45%', borderRadius: 3, background: 'var(--border-2)' }} />
+            </div>
+          ))}
+          {ci === 2 && (
+            <div className="mock-hop" style={{ background: 'var(--bg-surface)', border: '1px solid #a9bd80', borderRadius: 6, padding: '6px 7px', boxShadow: '0 4px 10px rgba(79,104,49,0.18)' }}>
+              <div style={{ height: 5, width: '80%', borderRadius: 3, background: 'var(--brand-primary)', opacity: 0.55, marginBottom: 4 }} />
+              <div style={{ height: 4, width: '50%', borderRadius: 3, background: 'var(--border-2)' }} />
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function MockContract({ isAr }: { isAr: boolean }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10 }}>
+      <div style={{ background: 'var(--bg-app)', border: '1px solid var(--border-1)', borderRadius: 10, padding: '14px 16px', width: '75%' }}>
+        {[85, 100, 92, 60].map((w, i) => (
+          <div key={i} style={{ height: 4, width: `${w}%`, borderRadius: 3, background: 'var(--border-2)', marginBottom: 6 }} />
+        ))}
+        <svg viewBox="0 0 120 28" style={{ width: 96, height: 24, marginTop: 6 }}>
+          <path className="mock-sig" d="M4 20 C 16 4, 26 26, 38 14 S 58 6, 66 16 S 88 24, 100 10 S 112 14, 116 12"
+            fill="none" stroke="var(--brand-primary)" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </div>
+      <span className="pill pill-active mock-pop" style={{ fontSize: 10 }}>
+        <span className="dot" /> {isAr ? 'تم توقيع العقد ✓' : 'Contract signed ✓'}
+      </span>
+    </div>
+  )
+}
+
+function MockChat({ isAr }: { isAr: boolean }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 7, height: '100%', padding: '0 6px' }}>
+      <div className="mock-bub b1" style={{ alignSelf: 'flex-start', background: 'var(--bg-app)', border: '1px solid var(--border-1)', borderRadius: '10px 10px 10px 3px', padding: '6px 10px', fontSize: 10, color: 'var(--fg-2)', maxWidth: '75%' }}>
+        {isAr ? 'التصميم خلص؟ 👀' : 'Design ready? 👀'}
+      </div>
+      <div className="mock-bub b2" style={{ alignSelf: 'flex-end', background: 'var(--brand-primary)', color: '#fff', borderRadius: '10px 10px 3px 10px', padding: '6px 10px', fontSize: 10, maxWidth: '75%' }}>
+        {isAr ? 'اتبعت في الشات أهو 🚀' : 'Just sent it here 🚀'}
+      </div>
+      <div className="mock-bub b3" style={{ alignSelf: 'flex-end', display: 'flex', gap: 4 }}>
+        <span style={{ background: 'var(--bg-app)', border: '1px solid var(--border-1)', borderRadius: 999, padding: '2px 8px', fontSize: 9 }}>👍 2</span>
+        <span style={{ background: 'var(--bg-app)', border: '1px solid var(--border-1)', borderRadius: 999, padding: '2px 8px', fontSize: 9 }}>❤️ 1</span>
+      </div>
+    </div>
+  )
+}
+
+function MockProfit({ isAr }: { isAr: boolean }) {
+  const bars = [42, 68, 55, 88, 74, 96]
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 7, height: 76, direction: 'ltr', justifyContent: 'center' }}>
+        {bars.map((h, i) => (
+          <div key={i} className="mock-bar" style={{ width: 14, height: `${h}%`, borderRadius: '4px 4px 0 0', background: i % 2 ? 'var(--chart-2)' : 'var(--chart-1)', animationDelay: `${i * 120}ms`, transformOrigin: 'bottom' }} />
+        ))}
+      </div>
+      <div style={{ textAlign: 'center' }}>
+        <span className="pill pill-active" style={{ fontSize: 10 }}><span className="dot" /> {isAr ? 'هامش الربح +32%' : 'Profit margin +32%'}</span>
+      </div>
+    </div>
+  )
+}
+
+function MockResources({ isAr }: { isAr: boolean }) {
+  const rows = [
+    { name: isAr ? 'كريم' : 'Karim', w: 65, cls: 'w1', color: 'var(--brand-primary)' },
+    { name: isAr ? 'سارة' : 'Sara', w: 90, cls: 'w2', color: 'var(--warning-600, #d97706)' },
+    { name: isAr ? 'عمر' : 'Omar', w: 100, cls: 'w3', color: 'var(--danger-600, #dc2626)', over: true },
+  ]
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 12, height: '100%', padding: '0 4px' }}>
+      {rows.map((r, i) => (
+        <div key={i}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--fg-3)', marginBottom: 4 }}>
+            <span style={{ fontWeight: 700 }}>{r.name}</span>
+            {r.over && <span style={{ color: r.color, fontWeight: 700 }}>{isAr ? '⚠ تحميل زائد' : '⚠ Overloaded'}</span>}
+          </div>
+          <div style={{ height: 7, borderRadius: 99, background: 'var(--bg-app)', border: '1px solid var(--border-1)', overflow: 'hidden' }}>
+            <div className={`mock-fill ${r.cls}`} style={{ height: '100%', width: `${r.w}%`, borderRadius: 99, background: r.color }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function MockTicket({ isAr }: { isAr: boolean }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, height: '100%' }}>
+      <div style={{ background: 'var(--bg-app)', border: '1px solid var(--border-1)', borderRadius: 10, padding: '10px 14px', width: '82%' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--accent, var(--brand-primary))', fontFamily: 'var(--font-mono)' }}>TKT-0042</span>
+          <span className="pill pill-pending mock-blink" style={{ fontSize: 9, fontFamily: 'var(--font-mono)' }}>SLA 2h</span>
+        </div>
+        <div style={{ height: 5, width: '85%', borderRadius: 3, background: 'var(--border-2)', marginBottom: 5 }} />
+        <div style={{ height: 4, width: '55%', borderRadius: 3, background: 'var(--border-2)' }} />
+      </div>
+      <div className="mock-pop" style={{ fontSize: 13, letterSpacing: 2 }}>
+        <span style={{ color: '#d97706' }}>★★★★★</span> <span style={{ fontSize: 10, color: 'var(--fg-4)' }}>5/5</span>
+      </div>
     </div>
   )
 }
@@ -248,8 +390,8 @@ export default function LandingPage() {
     heroLoading:  isAr ? 'جاري الفتح...' : 'Opening...',
     // Stats
     stats: [
-      { value: '500+',    label: isAr ? 'عميل تمت إدارته'  : 'Clients Managed' },
-      { value: '12,000+', label: isAr ? 'مهمة تم تتبعها'  : 'Tasks Tracked' },
+      { value: '16',      label: isAr ? 'وحدة متكاملة'     : 'Integrated Modules' },
+      { value: '60+',     label: isAr ? 'ميزة جاهزة'       : 'Ready Features' },
       { value: '99%',     label: isAr ? 'نسبة التشغيل'     : 'Uptime' },
       { value: '24/7',    label: isAr ? 'وصول بلا انقطاع' : 'Always Available' },
     ],
@@ -264,21 +406,50 @@ export default function LandingPage() {
       { iconKey: 'finance',   title: isAr ? 'الفواتير والمالية'    : 'Invoices & Finance',  desc: isAr ? 'أنشئ فواتير احترافية، تتبّع المدفوعات، وراقب المصروفات والأرباح في لوحة مالية موحدة.'   : 'Create professional invoices, track payments, and monitor expenses and profits in a unified finance dashboard.' },
       { iconKey: 'analytics', title: isAr ? 'تقارير وتحليلات'      : 'Reports & Analytics', desc: isAr ? 'لوحة مؤشرات حية توضح الإيرادات والأرباح والأداء — بأرقام حقيقية وفي الوقت الفعلي.'       : 'A live KPI dashboard showing revenues, profits, and performance — in real numbers and real time.' },
       { iconKey: 'roles',     title: isAr ? 'صلاحيات وأدوار'       : 'Roles & Permissions', desc: isAr ? 'تحكّم في وصول كل مستخدم بدقة — أدمن، مدير، فريق، عميل — مع صلاحيات تفصيلية لكل وحدة.' : 'Fine-grained user access control — admin, manager, team, client — with per-module permission settings.' },
+      { iconKey: 'pipeline',  title: isAr ? 'قمع مبيعات Kanban'    : 'Sales Pipeline',      desc: isAr ? 'اسحب العملاء المحتملين بين المراحل، تابع نسب التحويل، وحوّل الفرصة لعميل ومشروع بضغطة.'   : 'Drag leads between stages, track conversion rates, and turn an opportunity into a client and project in one click.' },
+      { iconKey: 'quotes',    title: isAr ? 'عروض أسعار بروابط عامة' : 'Shareable Quotations', desc: isAr ? 'أنشئ عرض السعر وابعت للعميل لينك يفتحه بدون حساب — يشوف ويوافق أو يرفض فورًا.'          : 'Build a quote and send the client a public link — they view and accept or decline instantly, no account needed.' },
+      { iconKey: 'contracts', title: isAr ? 'عقود وتوقيع إلكتروني' : 'Contracts & E-Sign',  desc: isAr ? 'قوالب عقود، تجديد تلقائي، تنبيه قبل الانتهاء، ولينك توقيع إلكتروني يوقّع منه العميل.'    : 'Contract templates, auto-renewal, expiry alerts, and an e-signature link your client signs from directly.' },
+      { iconKey: 'helpdesk',  title: isAr ? 'دعم فني بـ SLA وتقييم' : 'Help Desk with SLA',  desc: isAr ? 'تذاكر بمحادثة كاملة وملاحظات داخلية، عدّاد SLA، تصعيد، وتقييم رضا العميل بالنجوم.'       : 'Ticket threads with internal notes, SLA countdowns, escalation, and star-rated client satisfaction.' },
+      { iconKey: 'chat',      title: isAr ? 'شات داخلي للفريق'     : 'Team Chat',           desc: isAr ? 'رسائل مباشرة وجروبات بتفاعلات إيموجي وإشارات @ — بسرعة لحظية وصوت إشعارات.'              : 'DMs and group channels with emoji reactions and @mentions — instant sending with notification sounds.' },
+      { iconKey: 'resources', title: isAr ? 'تخطيط الموارد'         : 'Resource Planning',   desc: isAr ? 'وزّع الفريق على المشاريع بالنِسَب، اكتشف التحميل الزائد تلقائيًا، وأدر الإجازات بموافقات.' : 'Allocate the team across projects by percentage, auto-detect overload, and manage vacations with approvals.' },
+      { iconKey: 'profit',    title: isAr ? 'ربحية المشاريع'        : 'Project Profitability', desc: isAr ? 'الإيراد مقابل التكلفة الفعلية (مصروفات + ساعات عمل) لكل مشروع وعميل مع توقعات الشهر القادم.' : 'Revenue vs real cost (expenses + labor hours) per project and client, with next-month forecasting.' },
+      { iconKey: 'time',      title: isAr ? 'تتبع الوقت بتايمر'     : 'Time Tracking',       desc: isAr ? 'تايمر مباشر من أي صفحة، سجلات ساعات لكل مشروع ومهمة، وتقارير أسبوعية للفريق.'             : 'A live timer from any page, hour logs per project and task, and weekly team reports.' },
+      { iconKey: 'files',     title: isAr ? 'مكتبة ملفات بإصدارات'  : 'File Library',        desc: isAr ? 'مجلدات لكل عميل ومشروع، وسوم للبحث، وإصدارات v1 وv2 لكل ملف بتاريخ كامل.'                : 'Folders per client and project, searchable tags, and v1/v2 file versioning with full history.' },
+      { iconKey: 'notify',    title: isAr ? 'إشعارات ذكية بصوت'     : 'Smart Notifications', desc: isAr ? 'جرس موحّد لكل شيء: ردود التذاكر، العقود اللي بتقرب تخلص، طلبات الإجازة — بنغمة لطيفة.'  : 'One bell for everything: ticket replies, expiring contracts, vacation requests — with a gentle chime.' },
     ],
     // Modules section
     modulesLabel: isAr ? 'الوحدات' : 'Modules',
-    modulesH2:    isAr ? 'نظام متكامل من 9 وحدات' : 'An Integrated System of 9 Modules',
+    modulesH2:    isAr ? 'نظام متكامل من 16 وحدة' : 'An Integrated System of 16 Modules',
     modulesSub:   isAr ? 'كل وحدة مصممة لتحل مشكلة محددة وتتكامل مع باقي الوحدات' : 'Each module designed to solve a specific problem and integrate seamlessly with the rest',
     modules: [
-      { iconKey: 'dashboard', name: 'Dashboard',     desc: isAr ? 'لوحة التحكم'     : 'Control Panel' },
-      { iconKey: 'crm',       name: 'CRM',           desc: isAr ? 'إدارة العملاء'   : 'Client Management' },
-      { iconKey: 'projects',  name: 'Projects',      desc: isAr ? 'المشاريع والبريف' : 'Projects & Briefs' },
-      { iconKey: 'tasks',     name: 'Tasks',         desc: isAr ? 'المهام والتسليم'  : 'Tasks & Handover' },
-      { iconKey: 'team',      name: 'Team',          desc: isAr ? 'الفريق والرواتب'  : 'Team & Payroll' },
-      { iconKey: 'finance',   name: 'Finance',       desc: isAr ? 'الفواتير والمالية': 'Invoices & Finance' },
-      { iconKey: 'templates', name: 'Templates',     desc: isAr ? 'قوالب جاهزة'     : 'Ready Templates' },
-      { iconKey: 'settings',  name: 'Settings',      desc: isAr ? 'الإعدادات'       : 'Settings' },
-      { iconKey: 'portal',    name: 'Client Portal', desc: isAr ? 'بوابة العميل'    : 'Client Portal' },
+      { iconKey: 'dashboard', name: 'Dashboard',     desc: isAr ? 'لوحة التحكم'      : 'Control Panel' },
+      { iconKey: 'crm',       name: 'CRM',           desc: isAr ? 'إدارة العملاء'    : 'Client Management' },
+      { iconKey: 'leads',     name: 'Leads',         desc: isAr ? 'قمع المبيعات'     : 'Sales Pipeline' },
+      { iconKey: 'projects',  name: 'Projects',      desc: isAr ? 'المشاريع والبريف'  : 'Projects & Briefs' },
+      { iconKey: 'tasks',     name: 'Tasks',         desc: isAr ? 'المهام والتسليم'   : 'Tasks & Handover' },
+      { iconKey: 'time',      name: 'Time',          desc: isAr ? 'تتبع الوقت'       : 'Time Tracking' },
+      { iconKey: 'quotes',    name: 'Quotations',    desc: isAr ? 'عروض الأسعار'     : 'Quotations' },
+      { iconKey: 'contracts', name: 'Contracts',     desc: isAr ? 'العقود والتوقيع'   : 'Contracts & E-Sign' },
+      { iconKey: 'finance',   name: 'Finance',       desc: isAr ? 'الفواتير والمالية' : 'Invoices & Finance' },
+      { iconKey: 'profit',    name: 'Profitability', desc: isAr ? 'الربحية'          : 'Profitability' },
+      { iconKey: 'tickets',   name: 'Help Desk',     desc: isAr ? 'الدعم الفني SLA'  : 'Support & SLA' },
+      { iconKey: 'chat',      name: 'Chat',          desc: isAr ? 'شات الفريق'       : 'Team Chat' },
+      { iconKey: 'resources', name: 'Resources',     desc: isAr ? 'تخطيط الموارد'    : 'Resource Planning' },
+      { iconKey: 'files',     name: 'Files',         desc: isAr ? 'مكتبة الملفات'    : 'File Library' },
+      { iconKey: 'team',      name: 'Team & HR',     desc: isAr ? 'الفريق والرواتب'   : 'Team & Payroll' },
+      { iconKey: 'portal',    name: 'Client Portal', desc: isAr ? 'بوابة العميل'     : 'Client Portal' },
+    ],
+    // Showcase (new features, animated mockups)
+    showcaseLabel: isAr ? '✨ الجديد في المنصة' : '✨ What\'s New',
+    showcaseH2:    isAr ? 'فيتشرز جديدة بالكامل — شوفها شغالة' : 'Brand-New Features — See Them in Action',
+    showcaseSub:   isAr ? 'من قمع المبيعات للتوقيع الإلكتروني للشات — كل ده اتضاف في آخر تحديثات' : 'From sales pipeline to e-signatures to team chat — all added in the latest updates',
+    showcase: [
+      { key: 'pipeline',  title: isAr ? 'قمع مبيعات بالسحب والإفلات' : 'Drag-and-Drop Pipeline',  desc: isAr ? 'حرّك الفرص بين المراحل وتابع نسبة التحويل لحظيًا' : 'Move deals between stages and watch conversion live' },
+      { key: 'contract',  title: isAr ? 'توقيع إلكتروني للعقود'       : 'Contract E-Signatures',   desc: isAr ? 'العميل يوقّع من لينك — بدون طباعة ولا سكانر'      : 'Clients sign from a link — no printing, no scanning' },
+      { key: 'chat',      title: isAr ? 'شات فريق لحظي'               : 'Instant Team Chat',       desc: isAr ? 'رسائل وتفاعلات وإشارات — بصوت إشعارات لطيف'        : 'Messages, reactions and mentions — with a gentle chime' },
+      { key: 'profit',    title: isAr ? 'ربحية كل مشروع'              : 'Per-Project Profitability', desc: isAr ? 'الإيراد مقابل التكلفة الفعلية بساعات الشغل'     : 'Revenue vs true cost including labor hours' },
+      { key: 'resources', title: isAr ? 'أحمال الفريق والإجازات'      : 'Workload & Vacations',    desc: isAr ? 'اكتشف التحميل الزائد قبل ما يحصل'                  : 'Catch overload before it happens' },
+      { key: 'ticket',    title: isAr ? 'دعم فني بـ SLA وتقييم'       : 'Help Desk, SLA & CSAT',   desc: isAr ? 'عدّاد التزام ورضا عملاء بالنجوم'                   : 'SLA countdowns and star-rated satisfaction' },
     ],
     // Demo CTA section
     demoLabel:        isAr ? '⚡ جرّب الآن'                              : '⚡ Try Now',
@@ -313,7 +484,7 @@ export default function LandingPage() {
     faqs: [
       { q: isAr ? 'هل يمكن تجربة النظام قبل إنشاء حساب؟'  : 'Can I try the system before creating an account?',    a: isAr ? 'نعم! اضغط على "جرّب الديمو" وسيتم إنشاء بيانات تجريبية كاملة وتسجيل دخولك تلقائياً بدون أي خطوات إضافية.' : 'Yes! Click "Try Demo" and full demo data will be created and you\'ll be logged in automatically with no extra steps.' },
       { q: isAr ? 'هل يعمل النظام على الموبايل؟'            : 'Does the system work on mobile?',                    a: isAr ? 'نعم، النظام مصمم بشكل متجاوب يعمل على جميع الأجهزة — سطح المكتب والتابلت والموبايل.'  : 'Yes, the system is responsively designed and works on all devices — desktop, tablet, and mobile.' },
-      { q: isAr ? 'ما الوحدات المتوفرة في النظام؟'          : 'What modules are available?',                        a: isAr ? 'يضم النظام 9 وحدات: لوحة تحكم، CRM، مشاريع، مهام، فريق، مالية، قوالب، إعدادات، وبوابة عميل.' : 'The system includes 9 modules: Dashboard, CRM, Projects, Tasks, Team, Finance, Templates, Settings, and Client Portal.' },
+      { q: isAr ? 'ما الوحدات المتوفرة في النظام؟'          : 'What modules are available?',                        a: isAr ? 'يضم النظام 16 وحدة: لوحة تحكم، CRM، قمع مبيعات، مشاريع، مهام، تتبع وقت، عروض أسعار، عقود بتوقيع إلكتروني، فواتير ومالية، ربحية، دعم فني بـ SLA، شات فريق، تخطيط موارد، مكتبة ملفات، فريق ورواتب، وبوابة عميل.' : 'The system includes 16 modules: Dashboard, CRM, Sales Pipeline, Projects, Tasks, Time Tracking, Quotations, Contracts with E-Sign, Invoices & Finance, Profitability, Help Desk with SLA, Team Chat, Resource Planning, File Library, Team & Payroll, and Client Portal.' },
       { q: isAr ? 'هل يوجد بوابة للعميل؟'                   : 'Is there a client portal?',                          a: isAr ? 'نعم! يمكن لعملائك الوصول لبوابة خاصة لمتابعة المشاريع، والموافقة على البريف، وعرض الفواتير.' : 'Yes! Your clients can access a private portal to follow projects, approve briefs, and view invoices.' },
       { q: isAr ? 'هل النظام مصمم للعربية؟'                 : 'Is the system designed for Arabic?',                 a: isAr ? 'نعم، النظام عربي-أول مع دعم كامل للغة الإنجليزية، مع تصميم RTL أصيل وليس مجرد ترجمة.' : 'Yes, the system is Arabic-first with full English support, featuring genuine RTL design — not just a translation.' },
     ],
@@ -388,6 +559,7 @@ export default function LandingPage() {
         .aw-wrap {
           display:inline-block; overflow:hidden;
           vertical-align:bottom;
+          margin-inline-end:0.22em;
         }
         .aw-word {
           display:inline-block;
@@ -405,6 +577,7 @@ export default function LandingPage() {
         }
         .hero-word {
           display:inline-block;
+          margin-inline-end:0.24em;
           animation: wordIn 0.65s cubic-bezier(0.22,0.61,0.36,1) both;
         }
 
@@ -429,16 +602,103 @@ export default function LandingPage() {
         .module-badge { transition:border-color 0.18s ease, transform 0.18s ease, opacity 0.55s ease, transform 0.55s cubic-bezier(0.22,0.61,0.36,1) !important; }
         .module-badge:hover { border-color:#a9bd80 !important; transform:translateY(-3px); }
 
+        /* ── Floating hero satellite cards ── */
+        @keyframes satFloat {
+          0%,100% { transform:translateY(0) rotate(-0.5deg); }
+          50%     { transform:translateY(-12px) rotate(0.5deg); }
+        }
+        .hero-sat { animation:satFloat 5.2s ease-in-out infinite; will-change:transform; }
+        .sat-1 { animation-delay:0s; }
+        .sat-2 { animation-delay:1.3s; animation-duration:6s; }
+        .sat-3 { animation-delay:0.7s; animation-duration:5.6s; }
+        .sat-4 { animation-delay:2s;   animation-duration:6.4s; }
+
+        /* ── Gradient orbs ── */
+        @keyframes orbDrift {
+          0%,100% { transform:translate(0,0) scale(1); }
+          50%     { transform:translate(20px,-24px) scale(1.08); }
+        }
+        .orb { position:absolute; border-radius:50%; filter:blur(10px); pointer-events:none; animation:orbDrift 11s ease-in-out infinite; }
+        .orb.o2 { animation-delay:3s; animation-duration:14s; }
+
+        /* ── Showcase cards: 3D tilt on hover ── */
+        .showcase-card .showcase-stage {
+          transform-style:preserve-3d;
+          transition:transform 0.45s cubic-bezier(0.22,0.61,0.36,1), box-shadow 0.45s ease, border-color 0.3s ease;
+        }
+        .showcase-card:hover .showcase-stage {
+          transform:rotateX(7deg) rotateY(-6deg) translateY(-6px) scale(1.02);
+          box-shadow:0 24px 48px rgba(23,22,19,0.16), 0 8px 18px rgba(79,104,49,0.10);
+          border-color:#a9bd80 !important;
+        }
+        [dir=rtl] .showcase-card:hover .showcase-stage { transform:rotateX(7deg) rotateY(6deg) translateY(-6px) scale(1.02); }
+
+        /* ── Mockup animations ── */
+        @keyframes mockHop {
+          0%,55%,100% { transform:translateY(0); box-shadow:0 4px 10px rgba(79,104,49,0.18); }
+          25%         { transform:translateY(-7px); box-shadow:0 12px 20px rgba(79,104,49,0.26); }
+        }
+        .mock-hop { animation:mockHop 3.2s ease-in-out infinite; }
+
+        .mock-sig {
+          stroke-dasharray:220; stroke-dashoffset:220;
+          animation:sigDraw 3.6s ease-in-out infinite;
+        }
+        @keyframes sigDraw {
+          0%      { stroke-dashoffset:220; }
+          45%,80% { stroke-dashoffset:0; }
+          100%    { stroke-dashoffset:-220; }
+        }
+
+        @keyframes popIn {
+          0%   { opacity:0; transform:scale(0.7) translateY(6px); }
+          60%  { opacity:1; transform:scale(1.06) translateY(0); }
+          100% { opacity:1; transform:scale(1); }
+        }
+        .mock-pop { animation:popIn 0.8s cubic-bezier(0.34,1.56,0.64,1) both; animation-delay:1.2s; }
+
+        @keyframes bubCycle {
+          0%,4%   { opacity:0; transform:scale(0.8) translateY(8px); }
+          10%,88% { opacity:1; transform:scale(1) translateY(0); }
+          96%,100%{ opacity:0; transform:scale(0.9); }
+        }
+        .mock-bub { animation:bubCycle 7s ease-in-out infinite; }
+        .mock-bub.b2 { animation-delay:0.9s; }
+        .mock-bub.b3 { animation-delay:1.8s; }
+
+        @keyframes barGrow {
+          0%,8%    { transform:scaleY(0.08); }
+          38%,86%  { transform:scaleY(1); }
+          100%     { transform:scaleY(0.08); }
+        }
+        .mock-bar { animation:barGrow 5.5s cubic-bezier(0.22,0.61,0.36,1) infinite; }
+
+        @keyframes fillGrow { from { width:0; } }
+        .mock-fill { animation:fillGrow 1.6s cubic-bezier(0.22,0.61,0.36,1) both; }
+        .mock-fill.w2 { animation-delay:0.3s; }
+        .mock-fill.w3 { animation-delay:0.6s; }
+
+        @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.45; } }
+        .mock-blink { animation:blink 1.6s ease-in-out infinite; }
+
+        @media (prefers-reduced-motion: reduce) {
+          .hero-sat, .orb, .mock-hop, .mock-sig, .mock-pop, .mock-bub, .mock-bar, .mock-fill, .mock-blink { animation:none !important; }
+          .mock-bub { opacity:1; }
+        }
+
         /* ── Responsive ── */
         @media (max-width:900px) {
           .nav-links-d { display:none !important; }
           .features-g  { grid-template-columns:repeat(2,1fr) !important; }
-          .modules-g   { grid-template-columns:repeat(5,1fr) !important; }
+          .modules-g   { grid-template-columns:repeat(4,1fr) !important; }
+          .showcase-g  { grid-template-columns:repeat(2,1fr) !important; }
+          .hero-sat    { display:none !important; }
         }
         @media (max-width:640px) {
           .stats-row        { grid-template-columns:repeat(2,1fr) !important; }
           .features-g       { grid-template-columns:1fr !important; }
           .modules-g        { grid-template-columns:repeat(3,1fr) !important; }
+          .showcase-g       { grid-template-columns:1fr !important; }
           .footer-g         { grid-template-columns:1fr 1fr !important; }
           .hero-btns        { flex-direction:column; align-items:stretch !important; }
           .hero-btns .btn-primary, .hero-btns .btn-secondary { justify-content:center; }
@@ -464,7 +724,7 @@ export default function LandingPage() {
           <span style={{ fontSize: 15, fontWeight: 700, color: L.fg1, letterSpacing: '-0.01em' }}>treeelivine</span>
         </Link>
         <div className="nav-links-d" style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {[{ label: lp.navFeatures, href: '#features' }, { label: lp.navModules, href: '#modules' }, { label: lp.navPricing, href: '#pricing' }, { label: 'FAQ', href: '#faq' }].map(l => (
+          {[{ label: lp.navFeatures, href: '#features' }, { label: lp.navModules, href: '#modules' }, { label: isAr ? 'الجديد ✨' : 'New ✨', href: '#new' }, { label: lp.navPricing, href: '#pricing' }, { label: 'FAQ', href: '#faq' }].map(l => (
             <a key={l.href} href={l.href} className="ln-link">{l.label}</a>
           ))}
         </div>
@@ -542,6 +802,34 @@ export default function LandingPage() {
           <div style={{ position: 'absolute', bottom: '8%', left: '50%', transform: 'translateX(-50%)', width: '60%', height: 80, background: 'rgba(79,104,49,0.2)', filter: 'blur(52px)', pointerEvents: 'none', zIndex: 0 }} />
 
           <div id="hero-dashboard" style={{ maxWidth: 1060, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+            {/* floating satellite cards (hidden on small screens) */}
+            <div className="hero-sat sat-1" style={{ position: 'absolute', top: '14%', insetInlineStart: -26, zIndex: 3, background: 'var(--bg-surface)', border: `1px solid ${L.border}`, borderRadius: 12, padding: '10px 14px', boxShadow: '0 14px 34px rgba(0,0,0,0.16)', display: 'flex', alignItems: 'center', gap: 9 }}>
+              <span style={{ width: 30, height: 30, borderRadius: 9, background: L.oliveL, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🔔</span>
+              <span style={{ textAlign: 'start' }}>
+                <span style={{ display: 'block', fontSize: 11, fontWeight: 700, color: L.fg1 }}>{isAr ? 'تم سداد فاتورة' : 'Invoice paid'}</span>
+                <span className="ltr-num" style={{ display: 'block', fontSize: 10, color: L.fg4, fontFamily: 'var(--font-mono)' }}>INV-2026-014 · SAR 8,500</span>
+              </span>
+            </div>
+            <div className="hero-sat sat-2" style={{ position: 'absolute', top: '42%', insetInlineEnd: -30, zIndex: 3, background: 'var(--bg-surface)', border: `1px solid ${L.border}`, borderRadius: 12, padding: '10px 14px', boxShadow: '0 14px 34px rgba(0,0,0,0.16)', display: 'flex', alignItems: 'center', gap: 9 }}>
+              <span style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(47,138,62,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>✍️</span>
+              <span style={{ textAlign: 'start' }}>
+                <span style={{ display: 'block', fontSize: 11, fontWeight: 700, color: L.fg1 }}>{isAr ? 'تم توقيع العقد' : 'Contract signed'}</span>
+                <span style={{ display: 'block', fontSize: 10, color: '#2f8a3e', fontWeight: 600 }}>{isAr ? 'دلوقتي ✓' : 'Just now ✓'}</span>
+              </span>
+            </div>
+            <div className="hero-sat sat-3" style={{ position: 'absolute', bottom: '30%', insetInlineStart: -20, zIndex: 3, background: 'var(--brand-primary)', color: '#fff', borderRadius: '14px 14px 14px 4px', padding: '9px 14px', boxShadow: '0 14px 34px rgba(79,104,49,0.32)', fontSize: 11, fontWeight: 600 }}>
+              {isAr ? 'تمام يا فندم، هخلص النهاردة 🚀' : 'On it — shipping today 🚀'}
+              <span style={{ display: 'block', fontSize: 9, opacity: 0.75, marginTop: 2, textAlign: 'end' }}>✓✓</span>
+            </div>
+            <div className="hero-sat sat-4" style={{ position: 'absolute', top: '8%', insetInlineEnd: '12%', zIndex: 3, background: 'var(--bg-surface)', border: `1px solid ${L.border}`, borderRadius: 12, padding: '9px 13px', boxShadow: '0 14px 34px rgba(0,0,0,0.14)', textAlign: 'start' }}>
+              <span style={{ display: 'block', fontSize: 9, color: L.fg4, marginBottom: 3 }}>{isAr ? 'هامش الربح' : 'Profit margin'}</span>
+              <span style={{ display: 'flex', alignItems: 'flex-end', gap: 3, direction: 'ltr' }}>
+                {[40, 65, 50, 85].map((h, i) => (
+                  <span key={i} style={{ width: 6, height: h * 0.28, borderRadius: 2, background: i === 3 ? 'var(--chart-1)' : 'var(--border-2)', display: 'inline-block' }} />
+                ))}
+                <span style={{ fontSize: 12, fontWeight: 800, color: '#2f8a3e', marginInlineStart: 4 }}>+32%</span>
+              </span>
+            </div>
             <div style={{
               borderRadius: 18,
               overflow: 'hidden',
@@ -625,8 +913,50 @@ export default function LandingPage() {
               <AnimatedWords text={lp.modulesSub} baseDelay={280} />
             </p>
           </div>
-          <div className="cards-container modules-g" style={{ display: 'grid', gridTemplateColumns: 'repeat(9,1fr)', gap: 10 }}>
+          <div className="cards-container modules-g" style={{ display: 'grid', gridTemplateColumns: 'repeat(8,1fr)', gap: 10 }}>
             {lp.modules.map((m, i) => <ModuleBadge key={i} {...m} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════ NEW FEATURES SHOWCASE (animated 3D mockups) ═══════════════════ */}
+      <section id="new" style={{ padding: 'clamp(56px,8vw,96px) clamp(16px,4vw,24px)', position: 'relative', overflow: 'hidden' }}>
+        {/* floating gradient orbs */}
+        <div className="orb" style={{ top: 60, insetInlineStart: '-6%', width: 300, height: 300, background: 'radial-gradient(circle, rgba(79,104,49,0.14), transparent 70%)' }} />
+        <div className="orb o2" style={{ bottom: 40, insetInlineEnd: '-4%', width: 260, height: 260, background: 'radial-gradient(circle, rgba(47,107,191,0.10), transparent 70%)' }} />
+
+        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
+          <div className="reveal-section" style={{ textAlign: 'center', marginBottom: 52 }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: L.olive, marginBottom: 14 }}>{lp.showcaseLabel}</div>
+            <h2 style={{ fontSize: 'clamp(22px,3.5vw,38px)', fontWeight: 700, color: L.fg1, letterSpacing: '-0.015em', marginBottom: 12 }}>
+              <AnimatedWords text={lp.showcaseH2} />
+            </h2>
+            <p style={{ fontSize: 14, color: L.fg3, maxWidth: 560, margin: '0 auto', lineHeight: 1.75 }}>
+              <AnimatedWords text={lp.showcaseSub} baseDelay={300} />
+            </p>
+          </div>
+
+          <div className="cards-container showcase-g" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20, perspective: 1600 }}>
+            {lp.showcase.map((s, i) => (
+              <div key={s.key} className="fade-card showcase-card" style={{ transitionDelay: `${i * 60}ms` }}>
+                <div className="showcase-stage" style={{
+                  height: 190, borderRadius: 14, border: `1px solid ${L.border}`,
+                  background: `linear-gradient(160deg, var(--bg-surface), var(--bg-surface-2, var(--bg-app)))`,
+                  padding: 16, overflow: 'hidden', position: 'relative',
+                }}>
+                  {s.key === 'pipeline' && <MockPipeline isAr={isAr} />}
+                  {s.key === 'contract' && <MockContract isAr={isAr} />}
+                  {s.key === 'chat' && <MockChat isAr={isAr} />}
+                  {s.key === 'profit' && <MockProfit isAr={isAr} />}
+                  {s.key === 'resources' && <MockResources isAr={isAr} />}
+                  {s.key === 'ticket' && <MockTicket isAr={isAr} />}
+                </div>
+                <div style={{ padding: '14px 6px 0' }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, color: L.fg1, marginBottom: 5 }}>{s.title}</h3>
+                  <p style={{ fontSize: 12.5, color: L.fg4, lineHeight: 1.65 }}>{s.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

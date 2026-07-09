@@ -1517,6 +1517,36 @@ code, kbd, pre {
 .chat-send:not(:disabled):hover { transform: scale(1.08) rotate(-8deg); }
 .chat-send:disabled { opacity: 0.45; cursor: not-allowed; }
 
+/* notes / comment threads — share the same floating entrance */
+.notes-list { display: flex; flex-direction: column; gap: 10px; }
+.note-item {
+  display: flex; gap: 0.6rem; align-items: flex-start;
+  animation: chatFloatIn 0.5s cubic-bezier(0.22, 1.15, 0.36, 1) both;
+}
+.note-card {
+  flex: 1; min-width: 0; background: var(--bg-surface-2);
+  border: 1px solid var(--border-1); border-radius: var(--radius-lg);
+  padding: 0.6rem 0.8rem; box-shadow: var(--shadow-xs);
+  transition: box-shadow 0.2s var(--ease-out), transform 0.2s var(--ease-out);
+}
+.note-card:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.note-card.pinned { background: var(--brand-primary-soft); border-color: var(--brand-olive-200); }
+.note-body { font-size: var(--fs-sm); color: var(--fg-1); line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+.note-meta { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.note-author { font-size: var(--fs-xs); color: var(--fg-4); }
+.note-actions { margin-inline-start: auto; display: flex; gap: 2px; }
+.note-pin-flag { color: var(--brand-primary); font-size: var(--fs-xs); font-weight: 700; }
+
+/* activity timeline — gentle staggered rise */
+.act-item { animation: chatFloatIn 0.45s var(--ease-out) both; }
+.act-dot { position: relative; }
+.act-item:first-child .act-dot::after {
+  content: ''; position: absolute; inset: -4px; border-radius: 50%;
+  border: 2px solid var(--brand-primary); opacity: 0.5;
+  animation: pulseDot 2.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .chat-msg, .chat-react, .chat-emoji-pop, .chat-msg.newest .chat-bubble { animation: none; }
+  .chat-msg, .chat-react, .chat-emoji-pop, .chat-msg.newest .chat-bubble,
+  .note-item, .act-item, .act-item:first-child .act-dot::after { animation: none; }
 }

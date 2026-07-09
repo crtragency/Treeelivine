@@ -55,30 +55,43 @@ export default function TicketThread({ ticketId, staff = false }: { ticketId: st
     setSending(false)
   }
 
+  const avatarColor = (name = '') => {
+    let h = 0
+    for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h)
+    return `hsl(${Math.abs(h) % 360} 42% 40%)`
+  }
+  const initials = (name = '') => name.trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('') || '؟'
+  const stamp = (d: string) => new Date(d).toLocaleString(isAr ? 'ar-u-ca-gregory' : 'en', { dateStyle: 'short', timeStyle: 'short' })
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-      <div style={{ maxHeight: 320, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0.25rem 0' }}>
+      <div className="chat-thread" style={{ maxHeight: 340, padding: '0.35rem 0.15rem 0.5rem' }}>
         {loading ? (
           <p style={{ textAlign: 'center', color: 'var(--fg-4)', fontSize: '0.8rem', padding: '1rem' }}>…</p>
         ) : messages.length === 0 ? (
           <p style={{ textAlign: 'center', color: 'var(--fg-4)', fontSize: '0.8rem', padding: '1rem' }}>{t['ticket.noMessages']}</p>
-        ) : messages.map(m => {
+        ) : messages.map((m, i) => {
           const mine = m.authorId === user?._id
+          const newest = i === messages.length - 1
           return (
-            <div key={m._id} style={{
-              alignSelf: mine ? 'flex-end' : 'flex-start', maxWidth: '85%',
-              background: m.internal ? 'var(--warning-100, #fef3c7)' : mine ? 'var(--brand-primary)' : 'var(--bg-surface-2, var(--bg-app))',
-              color: m.internal ? 'var(--fg-1)' : mine ? '#fff' : 'var(--fg-1)',
-              borderRadius: 10, padding: '0.5rem 0.75rem',
-              border: m.internal ? '1px dashed var(--warning-600, #d97706)' : '1px solid var(--border-1)',
-              opacity: m.pending ? 0.6 : 1, transition: 'opacity 150ms',
-            }}>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', marginBottom: 2 }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.85 }}>{m.authorName || '—'}</span>
-                {m.internal && <span style={{ fontSize: '0.62rem', fontWeight: 600, color: 'var(--warning-600, #b45309)' }}>{t['ticket.internalNote']}</span>}
-                <span style={{ fontSize: '0.62rem', opacity: 0.65 }}>{new Date(m.createdAt).toLocaleString(isAr ? 'ar-u-ca-gregory' : 'en', { dateStyle: 'short', timeStyle: 'short' })}</span>
+            <div key={m._id} className={`chat-msg ${mine ? 'mine' : 'theirs'}${m.pending ? ' pending' : ''}${newest ? ' newest' : ''}`}>
+              {!mine && (
+                <span className="chat-avatar" style={{ background: avatarColor(m.authorName) }} aria-hidden>
+                  {initials(m.authorName)}
+                </span>
+              )}
+              <div className="chat-col">
+                <div className={`chat-bubble${m.internal ? ' internal' : ''}`}>
+                  {(!mine || m.internal) && (
+                    <p className="chat-author">
+                      {m.authorName || '—'}
+                      {m.internal && <span className="chat-note-tag">{t['ticket.internalNote']}</span>}
+                    </p>
+                  )}
+                  <p className="chat-body">{m.body}</p>
+                  <p className="chat-time ltr-num">{stamp(m.createdAt)}</p>
+                </div>
               </div>
-              <p style={{ fontSize: '0.82rem', lineHeight: 1.55, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{m.body}</p>
             </div>
           )
         })}

@@ -154,6 +154,18 @@ export default function DashboardPage() {
   const actLabel = (type: string) =>
     type === 'invoice' ? t.invoiceActivity : type === 'task' ? t.taskActivity : t.customerActivity
 
+  const quickActionsCard = (hasPermission('finance.write') || hasPermission('crm.write') || hasPermission('projects.write')) ? (
+    <div className="card-surface">
+      <div className="card-head"><h3>{t.quickActions}</h3></div>
+      <div style={{ padding: 'var(--space-3) var(--space-4) var(--space-4)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {hasPermission('finance.write') && <Link href="/app/invoices" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.Invoice /> {t.newInvoice}</Link>}
+        {hasPermission('crm.write') && <Link href="/app/clients" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.User /> {t.addCustomer}</Link>}
+        {hasPermission('projects.write') && <Link href="/app/projects" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.Folder /> {t.newProject}</Link>}
+        {hasPermission('finance.write') && <Link href="/app/financial" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.Receipt /> {t.logExpense}</Link>}
+      </div>
+    </div>
+  ) : null
+
   return (
     <div className="page-content">
 
@@ -228,8 +240,11 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ── Attention table + activity feed ─────────────── */}
+          {/* ── Projects + chart (left) · activity + actions (right) ── */}
           <div className="dash-bottom-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, alignItems: 'start' }}>
+
+            {/* LEFT: projects attention + revenue chart */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
 
             <div className="card-surface">
               <div className="card-head">
@@ -275,6 +290,33 @@ export default function DashboardPage() {
               )}
             </div>
 
+            {data.monthly ? (
+            <div className="card-surface">
+              <div className="card-head">
+                <div>
+                  <h3>{t.revenueVsExpenses}</h3>
+                  <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-4)', marginTop: 2 }}>{t.monthlyOverview} — {new Date().getFullYear()}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 14, fontSize: 'var(--fs-xs)', color: 'var(--fg-3)' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{ width: 9, height: 9, borderRadius: 2, background: 'var(--chart-1)' }} /> {t.revenue}
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{ width: 9, height: 9, borderRadius: 2, background: 'var(--chart-2)' }} /> {t.expenses}
+                  </span>
+                </div>
+              </div>
+              <div style={{ padding: 'var(--space-5) var(--space-4) var(--space-4)' }}>
+                <RevenueChart monthly={data.monthly || []} cur={cur} lang={lang} t={t} />
+              </div>
+            </div>
+            ) : quickActionsCard}
+
+            </div>{/* end LEFT */}
+
+            {/* RIGHT: recent activity + quick actions */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
             <div className="card-surface">
               <div className="card-head"><h3>{t.recentActivity}</h3></div>
               <div style={{ padding: '4px var(--space-4) var(--space-3)' }}>
@@ -301,45 +343,10 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
-          </div>
 
-          {/* ── Chart + quick actions ───────────────────────── */}
-          <div className="dash-bottom-grid" style={{ display: 'grid', gridTemplateColumns: data.monthly ? '2fr 1fr' : '1fr', gap: 16, alignItems: 'start' }}>
-            {data.monthly && (
-            <div className="card-surface">
-              <div className="card-head">
-                <div>
-                  <h3>{t.revenueVsExpenses}</h3>
-                  <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-4)', marginTop: 2 }}>{t.monthlyOverview} — {new Date().getFullYear()}</div>
-                </div>
-                <div style={{ display: 'flex', gap: 14, fontSize: 'var(--fs-xs)', color: 'var(--fg-3)' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <span style={{ width: 9, height: 9, borderRadius: 2, background: 'var(--chart-1)' }} /> {t.revenue}
-                  </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <span style={{ width: 9, height: 9, borderRadius: 2, background: 'var(--chart-2)' }} /> {t.expenses}
-                  </span>
-                </div>
-              </div>
-              <div style={{ padding: 'var(--space-5) var(--space-4) var(--space-4)' }}>
-                <RevenueChart monthly={data.monthly || []} cur={cur} lang={lang} t={t} />
-              </div>
-            </div>
-            )}
+            {data.monthly && quickActionsCard}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {(hasPermission('finance.write') || hasPermission('crm.write') || hasPermission('projects.write')) && (
-              <div className="card-surface">
-                <div className="card-head"><h3>{t.quickActions}</h3></div>
-                <div style={{ padding: 'var(--space-3) var(--space-4) var(--space-4)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {hasPermission('finance.write') && <Link href="/app/invoices" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.Invoice /> {t.newInvoice}</Link>}
-                  {hasPermission('crm.write') && <Link href="/app/clients" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.User /> {t.addCustomer}</Link>}
-                  {hasPermission('projects.write') && <Link href="/app/projects" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.Folder /> {t.newProject}</Link>}
-                  {hasPermission('finance.write') && <Link href="/app/financial" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}><Icons.Receipt /> {t.logExpense}</Link>}
-                </div>
-              </div>
-              )}
-            </div>
+            </div>{/* end RIGHT */}
           </div>
 
           {/* ── CRM pipeline strip ──────────────────────────── */}

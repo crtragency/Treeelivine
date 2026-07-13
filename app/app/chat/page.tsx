@@ -158,6 +158,14 @@ export default function ChatPage() {
 
   const timeStr = (d: string) => new Date(d).toLocaleTimeString(isAr ? 'ar-u-ca-gregory' : 'en', { hour: '2-digit', minute: '2-digit' })
 
+  // deterministic avatar tint + initials from a name
+  const avatarColor = (name = '') => {
+    let h = 0
+    for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h)
+    return `hsl(${Math.abs(h) % 360} 42% 40%)`
+  }
+  const initials = (name = '') => name.trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('') || '؟'
+
   if (!canChat) {
     return <div className="page-content"><div className="card-surface" style={{ padding: '3rem', textAlign: 'center', color: 'var(--fg-4)' }}>{t['chat.noAccess']}</div></div>
   }
@@ -213,37 +221,40 @@ export default function ChatPage() {
                 <span style={{ fontSize: '0.7rem', color: 'var(--fg-5)' }}>{(active.members || []).map((m: any) => m.name).join('، ')}</span>
               </div>
 
-              <div style={{ flex: 1, overflowY: 'auto', padding: '0.9rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
-                {loadingThread ? <LoadingSpinner /> : messages.map(m => {
+              <div className="chat-thread">
+                {loadingThread ? <LoadingSpinner /> : messages.map((m, i) => {
                   const mine = m.authorId === user?._id
+                  const newest = i === messages.length - 1
                   return (
-                    <div key={m._id} style={{ alignSelf: mine ? 'flex-end' : 'flex-start', maxWidth: '78%', position: 'relative' }}>
-                      <div onDoubleClick={() => setRxTarget(rxTarget === m._id ? null : m._id)} style={{
-                        background: mine ? 'var(--brand-primary)' : 'var(--bg-surface-2, var(--bg-app))',
-                        color: mine ? '#fff' : 'var(--fg-1)',
-                        border: mine ? 'none' : '1px solid var(--border-1)',
-                        borderRadius: 12, padding: '0.5rem 0.8rem', cursor: 'default',
-                        opacity: m.pending ? 0.6 : 1, transition: 'opacity 150ms',
-                      }}>
-                        {!mine && <p style={{ fontSize: '0.68rem', fontWeight: 700, opacity: 0.8, marginBottom: 2 }}>{m.authorName}</p>}
-                        <p style={{ fontSize: '0.84rem', lineHeight: 1.55, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{m.body}</p>
-                        <p className="ltr-num" style={{ fontSize: '0.62rem', opacity: 0.6, marginTop: 3, textAlign: 'end', fontFamily: 'var(--font-mono)' }}>{timeStr(m.createdAt)}</p>
-                      </div>
-                      <div style={{ display: 'flex', gap: 4, marginTop: 3, flexWrap: 'wrap', justifyContent: mine ? 'flex-end' : 'flex-start' }}>
-                        {(m.reactions || []).map((r: any) => (
-                          <button key={r.emoji} onClick={() => toggleReaction(m._id, r.emoji)} className="pill pill-draft" style={{ cursor: 'pointer', border: r.userIds.includes(user?._id) ? '1px solid var(--brand-primary)' : undefined }}>
-                            {r.emoji} <span className="ltr-num">{r.userIds.length}</span>
-                          </button>
-                        ))}
-                        <button onClick={() => setRxTarget(rxTarget === m._id ? null : m._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.72rem', color: 'var(--fg-5)', padding: '0 2px' }}>☺+</button>
-                      </div>
-                      {rxTarget === m._id && (
-                        <div className="card-surface" style={{ position: 'absolute', zIndex: 10, display: 'flex', gap: 4, padding: '0.3rem 0.5rem', boxShadow: 'var(--shadow-md)' }}>
-                          {QUICK_EMOJI.map(e => (
-                            <button key={e} onClick={() => toggleReaction(m._id, e)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}>{e}</button>
-                          ))}
-                        </div>
+                    <div key={m._id} className={`chat-msg ${mine ? 'mine' : 'theirs'}${m.pending ? ' pending' : ''}${newest ? ' newest' : ''}`}>
+                      {!mine && (
+                        <span className="chat-avatar" style={{ background: avatarColor(m.authorName) }} aria-hidden>
+                          {initials(m.authorName)}
+                        </span>
                       )}
+                      <div className="chat-col">
+                        <div className="chat-bubble" onDoubleClick={() => setRxTarget(rxTarget === m._id ? null : m._id)}>
+                          {!mine && <p className="chat-author">{m.authorName}</p>}
+                          <p className="chat-body">{m.body}</p>
+                          <p className="chat-time ltr-num">{timeStr(m.createdAt)}</p>
+                          {rxTarget === m._id && (
+                            <div className="chat-emoji-pop">
+                              {QUICK_EMOJI.map(e => (
+                                <button key={e} onClick={() => toggleReaction(m._id, e)}>{e}</button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="chat-reacts">
+                          {(m.reactions || []).map((r: any) => (
+                            <button key={r.emoji} onClick={() => toggleReaction(m._id, r.emoji)}
+                              className={`chat-react${r.userIds.includes(user?._id) ? ' on' : ''}`}>
+                              {r.emoji} <span className="ltr-num">{r.userIds.length}</span>
+                            </button>
+                          ))}
+                          <button className="chat-addreact" onClick={() => setRxTarget(rxTarget === m._id ? null : m._id)} aria-label="reaction">☺﹢</button>
+                        </div>
+                      </div>
                     </div>
                   )
                 })}
@@ -253,12 +264,15 @@ export default function ChatPage() {
                 <div ref={bottomRef} />
               </div>
 
-              <div style={{ padding: '0.7rem 1rem', borderTop: '1px solid var(--border-1)', display: 'flex', gap: 8 }}>
+              <div className="chat-composer">
                 <input className="input" value={body} placeholder={t['chat.writeMessage']}
                   onChange={e => setBody(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-                  style={{ flex: 1 }} />
-                <button className="btn btn-primary" onClick={send} disabled={!body.trim()}>{t['chat.send']}</button>
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }} />
+                <button className="btn btn-primary chat-send" onClick={send} disabled={!body.trim()} aria-label={t['chat.send']}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ transform: isAr ? 'scaleX(-1)' : 'none' }}>
+                    <path d="M3 11.5 21 3l-8.5 18-2.2-7.3L3 11.5Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                  </svg>
+                </button>
               </div>
             </>
           )}

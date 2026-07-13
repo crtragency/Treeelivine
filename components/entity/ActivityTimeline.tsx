@@ -46,11 +46,12 @@ export default function ActivityTimeline({ entityType, entityId, refreshKey = 0 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       {items.map((a, i) => (
-        <div key={a._id} style={{
+        <div key={a._id} className="act-item" style={{
           display: 'flex', gap: 12, alignItems: 'flex-start', padding: '10px 0',
           borderBottom: i < items.length - 1 ? '1px solid var(--border-1)' : 'none',
+          animationDelay: `${Math.min(i, 8) * 0.04}s`,
         }}>
-          <span style={{
+          <span className="act-dot" style={{
             width: 8, height: 8, borderRadius: '50%', background: 'var(--brand-primary)',
             marginTop: 6, flexShrink: 0, opacity: 0.7,
           }} />

@@ -42,6 +42,13 @@ export default function NotesPanel({ entityType, entityId }: { entityType: strin
 
   const canWrite = !hasPermission || true // notes are open to all staff; API enforces
 
+  const avatarColor = (name = '') => {
+    let h = 0
+    for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h)
+    return `hsl(${Math.abs(h) % 360} 42% 40%)`
+  }
+  const initials = (name = '') => name.trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('') || '؟'
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {canWrite && (
@@ -60,25 +67,32 @@ export default function NotesPanel({ entityType, entityId }: { entityType: strin
         <p style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--fg-4)', fontSize: 'var(--fs-sm)' }}>
           {isAr ? 'لا توجد ملاحظات' : 'No notes yet'}
         </p>
-      ) : notes.map(n => (
-        <div key={n._id} style={{
-          background: n.pinned ? 'var(--brand-primary-soft)' : 'var(--bg-surface-2)',
-          border: '1px solid var(--border-1)', borderRadius: 'var(--radius-md)', padding: '10px 12px',
-        }}>
-          <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-1)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{n.body}</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
-            <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-4)' }}>
-              {n.authorName || '—'} · {new Date(n.createdAt).toLocaleDateString(isAr ? 'ar-u-ca-gregory' : 'en-US', { month: 'short', day: 'numeric' })}
-            </span>
-            <span style={{ marginInlineStart: 'auto', display: 'flex', gap: 4 }}>
-              <button className="btn btn-ghost btn-sm" onClick={() => togglePin(n)} title={isAr ? 'تثبيت' : 'Pin'}>
-                {n.pinned ? '★' : '☆'}
-              </button>
-              <button className="btn btn-ghost btn-sm" onClick={() => remove(n._id)} style={{ color: 'var(--danger-500)' }}>×</button>
-            </span>
-          </div>
+      ) : (
+        <div className="notes-list">
+          {notes.map(n => (
+            <div key={n._id} className="note-item">
+              <span className="chat-avatar" style={{ background: avatarColor(n.authorName) }} aria-hidden>
+                {initials(n.authorName)}
+              </span>
+              <div className={`note-card${n.pinned ? ' pinned' : ''}`}>
+                <p className="note-body">{n.body}</p>
+                <div className="note-meta">
+                  {n.pinned && <span className="note-pin-flag">★ {isAr ? 'مثبّتة' : 'Pinned'}</span>}
+                  <span className="note-author">
+                    {n.authorName || '—'} · {new Date(n.createdAt).toLocaleDateString(isAr ? 'ar-u-ca-gregory' : 'en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                  <span className="note-actions">
+                    <button className="btn btn-ghost btn-sm" onClick={() => togglePin(n)} title={isAr ? 'تثبيت' : 'Pin'}>
+                      {n.pinned ? '★' : '☆'}
+                    </button>
+                    <button className="btn btn-ghost btn-sm" onClick={() => remove(n._id)} style={{ color: 'var(--danger-500)' }}>×</button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   )
 }

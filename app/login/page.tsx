@@ -81,7 +81,7 @@ export default function LoginPage() {
     setDemoLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/seed', { method: 'POST' })
+      const res = await fetch('/api/demo-session', { method: 'POST' })
       const data = await res.json()
       if (data.success) {
         window.location.href = '/app'
